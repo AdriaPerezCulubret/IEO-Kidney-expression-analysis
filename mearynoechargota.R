@@ -1,20 +1,56 @@
 library(SummarizedExperiment)
-se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
-se
-dim(colData(se))
-mcols(colData(se), use.names=TRUE)
-rowRanges(se)
 library(edgeR)
+library(geneplotter)
+
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
+
+clvar <- colnames(colData(se))
+mcols(colData(se), use.names=TRUE)
+
+
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
-dge
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
-assays(se)$logCPM[1:5, 1:5]
-sampledepth <- round(dge$sample$lib.size / 1e6, digits=1)
-names(sampledepth) <- substr(colnames(se), 6, 12)
-sort(sampledepth)
+
+#NORMALIZATION
+
+dgenorm <- calcNormFactors(dge)
+assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
+
+# MA PLOT NO NORM
+dge$samples$group <- se$type
+table(dge$samples$group)
+plotSmear(dge, lowess=TRUE)
+
+
+# MA PLOT NORM
+dgenorm <- calcNormFactors(dge)
+dgenorm$samples$group <- se$type
+table(dgenorm$samples$group)
+plotSmear(dgenorm, lowess=TRUE)
+
+
+# GENE DIST
+
+# NO NORM
+genemean <- data.frame(Means=rowMeans(assays(se)$logCPM[,-1]))
+
+ggplot(genemean) + 
+  geom_bar(aes(x=Means), binwidth = 1.5, fill="white", color="black") +
+  theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
+  geom_vline(xintercept=mean(genemean$Means), color="red")
+
+# NORM
+
+genemean.norm <- data.frame(Means=rowMeans(assays(se)$logCPMnorm[,-1]))
+
+ggplot(genemean.norm) + 
+  geom_bar(aes(x=Means), binwidth = 1.5, fill="white", color="black") +
+  theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
+  geom_vline(xintercept=mean(genemean.norm$Means), color="red")
+
 
 # GENE EXPRESSION LogCPM PLOT
-library(geneplotter)
+
 par(mfrow=c(1,2), mar=c(4,5,1,1))
 # ALL SAMPLES PLOT
 multidensity(as.list(as.data.frame(assays(se)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "", cex.axis = 1.2, cex.lab = 1.5, las = 1)
@@ -25,8 +61,6 @@ multidensity(as.list(as.data.frame(assays(normalCPM)$logCPM)), xlab = "log2 CPM"
 multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 
 # NORMALIZATION PLOTS
-dgenorm <- calcNormFactors(dge)
-assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 normalCPMnorm <- se[,se$type == "normal"]
 tumorCPMnorm <- se[,se$type == "tumor"]
 multidensity(as.list(as.data.frame(assays(normalCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "", cex.axis = 1.2, cex.lab = 1.5, las = 1)
