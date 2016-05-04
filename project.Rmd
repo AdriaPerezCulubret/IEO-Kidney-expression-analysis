@@ -14,7 +14,7 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ## Loading DATA
 ```{r}
 library(SummarizedExperiment)
-se <- readRDS(file.path("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
 se
 ```
 
@@ -64,7 +64,7 @@ tumor.samples  <- rownames(dge.tumor$samples)
 common.samples <- intersect(normal.samples,tumor.samples)
 common.samples
 
-dgefilt <- dge[, !rownames(dge$samples) %in% common.samples]
+dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
 ```
 
 
@@ -88,13 +88,13 @@ ggplot(libsize) +
     aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
   ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
 
-dgefilt <- dgefilt[, dgefilt$sample$lib.size/1e6 > 50 & dgefilt$sample$lib.size/1e6 < 70]
+dge.filt <- dge.filt[, dge.filt$sample$lib.size/1e6 > 50 & dge.filt$sample$lib.size/1e6 < 70]
 ```
 
 
 
 ```{r}
-final.samples <- rownames(dgefilt$samples)
+final.samples <- rownames(dge.filt$samples)
 
 se.filt <-se[,colnames(se) %in% final.samples]
 summary(se.filt$samples)
@@ -123,4 +123,25 @@ legend("topleft", c("tumor", "normal"), fill=c("red", "yellow"), inset=0.01)
 ```
 
 
-### Distribution of expression levels among samples
+### Distribution of expression levels among genes
+```{r}
+genemean <- data.frame(Means=rowMeans(assays(se.filt)$logCPM[,-1]))
+
+ggplot(genemean) +
+  geom_bar(aes(x=Means), binwidth = 1, fill="white", color="black") +
+  theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
+  geom_vline(xintercept=mean(genemean$Means), color="red")
+```
+## Gene Filter by expression level
+```{r}
+avgexp <- rowMeans(assays(se.filt)$logCPM)
+mask <- avgexp > mean(genemean$Means)
+dim(se.filt)
+se.filt.genes <- se.filt[mask, ]
+dim(se.filt.genes)
+
+dim(dge.filt)
+dge.filt <- dge.filt[mask, ]
+dim(dge.filt)
+
+```
