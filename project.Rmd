@@ -1,4 +1,6 @@
 
+#KIDNEY HIHJUHHALA
+
 ```{r setup, cache=FALSE, echo=FALSE, results='asis'}
 
 ```
@@ -89,20 +91,24 @@ ggplot(libsize) +
   ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
 
 dge.filt <- dge.filt[, dge.filt$sample$lib.size/1e6 > 50 & dge.filt$sample$lib.size/1e6 < 70]
-```
 
 
-
-```{r}
 final.samples <- rownames(dge.filt$samples)
 
 se.filt <-se[,colnames(se) %in% final.samples]
+
 summary(se.filt$samples)
+
+
 ```
 
 
-#### After filtering
+
+#### AFTER SAMPLES FILTERING
 ```{r}
+
+summary(se.filt$type)
+
 ggplot(libsize) + 
   geom_histogram(
     aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
@@ -113,17 +119,10 @@ ggplot(libsize) +
   ylab("density\n") + xlab("\nMillions of Reads") +
   theme_bw() + xlim(c(25, 71))
 
-
-### NO TOCAR; NEGRO
-```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
-ord <- order(dge$sample$lib.size/1e6)
-barplot(dge$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
-        xlab="Samples", col=c("yellow", "red")[(se$type[ord] == "tumor") + 1])
-legend("topleft", c("tumor", "normal"), fill=c("red", "yellow"), inset=0.01)
 ```
 
 
-### Distribution of expression levels among genes
+### GENES FILTERING: Distribution of expression levels among genes
 ```{r}
 genemean <- data.frame(Means=rowMeans(assays(se.filt)$logCPM[,-1]))
 
@@ -132,16 +131,34 @@ ggplot(genemean) +
   theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
   geom_vline(xintercept=mean(genemean$Means), color="red")
 ```
-## Gene Filter by expression level
+#### Gene Filter by expression level
 ```{r}
 avgexp <- rowMeans(assays(se.filt)$logCPM)
 mask <- avgexp > mean(genemean$Means)
-dim(se.filt)
+
+dim(se.filt) # Before filtering SE
 se.filt.genes <- se.filt[mask, ]
-dim(se.filt.genes)
+dim(se.filt.genes) # After filtering SE
 
-dim(dge.filt)
+dim(dge.filt) # Before filtering DGE
 dge.filt <- dge.filt[mask, ]
-dim(dge.filt)
+dim(dge.filt) # After filtering DGE
 
+```
+
+## MA-plots
+
+```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(12, 3 ), mar=c(4, 4, 3, 1))
+setmp <- se.filt.genes[, se.filt.genes$type == "normal"]
+dgetmp <- dge.filt[, se.filt.genes$type == "normal"]
+for (i in 1:ncol(setmp)) {
+  A <- rowMeans(assays(setmp)$logCPMnorm)
+  M <- assays(setmp)$logCPMnorm[, i] - A
+  samplename <- substr(as.character(setmp$bcr_patient_barcode[i]), 1, 12)
+  smoothScatter(A, M, main=samplename, las=1)
+  abline(h=0, col="blue", lwd=2)
+  lo <- lowess(M ~ A)
+  lines(lo$x, lo$y, col="red", lwd=2)
+}
 ```
