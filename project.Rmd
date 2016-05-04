@@ -1,0 +1,126 @@
+
+```{r setup, cache=FALSE, echo=FALSE, results='asis'}
+
+```
+
+
+```
+library(knitr)     ## required for "knitting" from Rmd to md
+library(markdown)  ## required for processing from md to HTML
+knit2html("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/project.Rmd")  ## process Rmd to HTML
+browseURL("projectTemplate.html") ## open the resulting HTML file from R
+```
+
+## Loading DATA
+```{r}
+library(SummarizedExperiment)
+se <- readRDS(file.path("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se
+```
+
+## Explore phenotypic data
+
+```{r}
+dim(colData(se))
+colData(se)[1:5, 1:5]
+mcols(colData(se), use.names=TRUE)
+```
+
+## Explore freature data
+```{r}
+rowRanges(se)
+```
+
+
+## DGE object
+```{r}
+library(edgeR)
+
+dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
+assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
+```
+
+
+# QUALITY & NORMALIZATION
+```{r}
+dgenorm <- calcNormFactors(dge)
+assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
+```
+
+## Remove paired samples
+
+EXPLICACION
+
+```{r}
+normal.samples <- se[,se$type == "normal"]
+tumor.samples  <- se[,se$type == "tumor"]
+
+dge.normal <- DGEList(counts=assays(normal.samples)$counts, genes=mcols(normal.samples))
+dge.tumor  <- DGEList(counts=assays(tumor.samples)$counts, genes=mcols(tumor.samples))
+
+normal.samples <- rownames(dge.normal$samples)
+tumor.samples  <- rownames(dge.tumor$samples)
+
+common.samples <- intersect(normal.samples,tumor.samples)
+common.samples
+
+dgefilt <- dge[, !rownames(dge$samples) %in% common.samples]
+```
+
+
+## Library size
+
+```{r}
+library(ggplot2)
+
+libsize <- data.frame(libsize = dge$sample$lib.size/1e6, type = se$type)
+
+summary(libsize)
+
+
+ggplot(libsize) + 
+  geom_density(aes(x=libsize, fill=type), alpha=0.5) +
+  ylab("density\n") + xlab("\nMillions of Reads") +
+  theme_bw()
+  
+ggplot(libsize) + 
+  geom_histogram(
+    aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
+  ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
+
+dgefilt <- dgefilt[, dgefilt$sample$lib.size/1e6 > 50 & dgefilt$sample$lib.size/1e6 < 70]
+```
+
+
+
+```{r}
+final.samples <- rownames(dgefilt$samples)
+
+se.filt <-se[,colnames(se) %in% final.samples]
+summary(se.filt$samples)
+```
+
+
+#### After filtering
+```{r}
+ggplot(libsize) + 
+  geom_histogram(
+    aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
+  ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw() + xlim(c(25, 71))
+
+ggplot(libsize) + 
+  geom_density(aes(x=libsize, fill=type), alpha=0.5) +
+  ylab("density\n") + xlab("\nMillions of Reads") +
+  theme_bw() + xlim(c(25, 71))
+
+
+### NO TOCAR; NEGRO
+```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
+ord <- order(dge$sample$lib.size/1e6)
+barplot(dge$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
+        xlab="Samples", col=c("yellow", "red")[(se$type[ord] == "tumor") + 1])
+legend("topleft", c("tumor", "normal"), fill=c("red", "yellow"), inset=0.01)
+```
+
+
+### Distribution of expression levels among samples
