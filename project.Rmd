@@ -14,7 +14,7 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ## Loading DATA
 ```{r}
 library(SummarizedExperiment)
-se <- readRDS(file.path("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 se
 ```
 
@@ -26,7 +26,7 @@ colData(se)[1:5, 1:5]
 mcols(colData(se), use.names=TRUE)
 ```
 
-## Explore freature data
+## Explore feature data
 ```{r}
 rowRanges(se)
 ```
@@ -124,3 +124,22 @@ legend("topleft", c("tumor", "normal"), fill=c("red", "yellow"), inset=0.01)
 
 
 ### Distribution of expression levels among samples
+```{r}
+library(geneplotter)
+par(mfrow=c(1,2), mar=c(4,5,1,1))
+```
+### Distribution of expression levels (All samples)
+```{r}
+multidensity(as.list(as.data.frame(assays(se.filt)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+```
+
+## Expression levels comparison between normal and tumor
+```{r}
+normalCPMnorm <- se.filt[,se.filt$type == "normal"]
+tumorCPMnorm <- se.filt[,se.filt$type == "tumor"]
+multidensity(as.list(as.data.frame(assays(normalCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+multidensity(as.list(as.data.frame(assays(tumorCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+```
+
+
+
