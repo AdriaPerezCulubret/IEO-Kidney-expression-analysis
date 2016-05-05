@@ -184,6 +184,117 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+
+## BATCH IDENTIFICATION
+```{r}
+tss <- substr(colnames(se.filt.genes), 6, 7)
+table(tss)
+center <- substr(colnames(se.filt.genes), 27, 28)
+table(center)
+plate <- substr(colnames(se.filt.genes), 22, 25)
+table(plate)
+portionanalyte <- substr(colnames(se.filt.genes), 18, 20)
+table(portionanalyte)
+samplevial <- substr(colnames(se.filt.genes), 14, 16)
+table(samplevial)
+#dge.filt
+#se.filt.genes
+
+colnames(se.filt.genes)[portionanalyte == "02R"]
+colnames(se.filt.genes)[portionanalyte == "11R"]
+
+table(data.frame(TYPE=se.filt.genes$type, TSS=tss))
+```
+
+
+## TSS BATCH EFFECT
+```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(tss))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.filt.genes)
+outcome <- paste(substr(colnames(se.filt.genes), 9, 12), as.character(se.filt.genes$type), sep="-")
+names(outcome) <- colnames(se.filt.genes)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+                               function(x, batch, labels) {
+                                 if (is.leaf(x)) {
+                                   attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+                                   attr(x, "label") <- as.vector(labels[attr(x, "label")])
+                                 }
+                                 x
+                               }, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("TSS", sort(unique(batch)), levels(factor(tss))), fill=sort(unique(batch)))
+
+```
+
+```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
+       fill=sort(unique(batch)), inset=0.05)
+```
+
+
+## PLATE BATCH EFFECT
+```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(plate))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.filt.genes)
+outcome <- paste(substr(colnames(se.filt.genes), 9, 12), as.character(se.filt.genes$type), sep="-")
+names(outcome) <- colnames(se.filt.genes)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+                               function(x, batch, labels) {
+                                 if (is.leaf(x)) {
+                                   attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+                                   attr(x, "label") <- as.vector(labels[attr(x, "label")])
+                                 }
+                                 x
+                               }, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("PLATE", sort(unique(batch)), levels(factor(plate))), fill=sort(unique(batch)))
+
+```
+
+```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
+       fill=sort(unique(batch)), inset=0.05)
+```
+
+##PORTIONANALYTE BATCH EFFECT
+```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(portionanalyte))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.filt.genes)
+outcome <- paste(substr(colnames(se.filt.genes), 9, 12), as.character(se.filt.genes$type), sep="-")
+names(outcome) <- colnames(se.filt.genes)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+                               function(x, batch, labels) {
+                                 if (is.leaf(x)) {
+                                   attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+                                   attr(x, "label") <- as.vector(labels[attr(x, "label")])
+                                 }
+                                 x
+                               }, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))), fill=sort(unique(batch)))
+
+```
+
+```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))),
+       fill=sort(unique(batch)), inset=0.05)
+
+```
 ## SVA
 
 ```{r}
@@ -201,5 +312,3 @@ modzerosv <- cbind(modzero, sv$sv)
 pvsv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modsv, modzerosv)
 sum(p.adjust(pvsv, method="fdr") < 0.01)
 hist(pvsv,main="",las=1)
-
-```
