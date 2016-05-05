@@ -1,9 +1,27 @@
+<!-- TOC depthFrom:1 depthTo:6 withLinks:1 updateOnSave:1 orderedList:0 -->
 
-#KIDNEY HIHJUHHALA
+## Table of Contents
 
-```{r setup, cache=FALSE, echo=FALSE, results='asis'}
+- [LOADING DATA](#loading-data)
+	- [Explore phenotypic data](#explore-phenotypic-data)
+	- [Explore feature data](#explore-feature-data)
+	- [DGE object](#dge-object)
+- [QUALITY AND NORMALIZATION](#quality-normalization)
+	- [Paired samples](#remove-paired-samples)
+	- [Library size filtering](#library-size)
+	- [Genes Filtering: Distribution of expression levels among genes](#genes-filtering-distribution-of-expression-levels-among-genes)
+		- [Expression levels comparison between all sampes](#distribution-of-expression-levels-all-samples)
+	  - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+		- [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+	- [MA-plots](#ma-plots)
+	- [BATCH IDENTIFICATION](#batch-identification)
+	  - [TSS batch effect](#tss-batch-effect)
+	  - [PLATE batch effect](#plate-batch-effect)
+	  - [PORTION-ANALYTE batch effect](#portionanalyte-batch-effect)
+	- [Surrogate variable analysis](#sva)
 
-```
+<!-- /TOC -->
+
 
 
 ```
@@ -202,11 +220,14 @@ table(samplevial)
 colnames(se.filt.genes)[portionanalyte == "02R"]
 colnames(se.filt.genes)[portionanalyte == "11R"]
 
-table(data.frame(TYPE=se.filt.genes$type, TSS=tss))
 ```
 
 
 ## TSS BATCH EFFECT
+```{r}
+table(data.frame(TYPE=se.filt.genes$type, TSS=tss))
+```
+
 ```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -237,6 +258,10 @@ legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
 
 
 ## PLATE BATCH EFFECT
+```{r}
+table(data.frame(TYPE=se.filt.genes$type, PLATE=plate))
+```
+
 ```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -266,6 +291,11 @@ legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
 ```
 
 ##PORTIONANALYTE BATCH EFFECT
+
+```{r}
+table(data.frame(TYPE=se.filt.genes$type, P.analyte = portionanalyte))
+```
+
 ```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
