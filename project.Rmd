@@ -1,27 +1,25 @@
+<br>
 
-#KIDNEY HIHJUHHALA
+#KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
-```{r setup, cache=FALSE, echo=FALSE, results='asis'}
-
-```
-
-
+<br><br>
 ```
 library(knitr)     ## required for "knitting" from Rmd to md
 library(markdown)  ## required for processing from md to HTML
 knit2html("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/project.Rmd")  ## process Rmd to HTML
 browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```
+<br>
 
-## Loading DATA
+##LOADING DATA
 ```{r}
 library(SummarizedExperiment)
 
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
 se
 ```
 
-## Explore phenotypic data
+###Exploring phenotypic data
 
 ```{r}
 dim(colData(se))
@@ -29,13 +27,13 @@ colData(se)[1:5, 1:5]
 mcols(colData(se), use.names=TRUE)
 ```
 
-## Explore feature data
+###Exploring feature data
 ```{r}
 rowRanges(se)
 ```
 
 
-## DGE object
+###DGE object
 ```{r}
 library(edgeR)
 
@@ -43,14 +41,14 @@ dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
-
-# QUALITY & NORMALIZATION
+<br><br>
+#QUALITY & NORMALIZATION
 ```{r}
 dgenorm <- calcNormFactors(dge)
 assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
-
-## Remove paired samples
+<br>
+##Paired samples removing
 
 EXPLICACION
 
@@ -70,9 +68,8 @@ common.samples
 dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
 ```
 
-
-## Library size
-
+<br>
+##Library size filtering
 ```{r}
 library(ggplot2)
 
@@ -103,9 +100,7 @@ summary(se.filt$samples)
 
 ```
 
-
-
-#### AFTER SAMPLES FILTERING
+POSAR EXPLICACIÓ: EL SEGÜENT, ÉS DESPRÉS DE FILTAR
 ```{r}
 
 summary(se.filt$type)
@@ -122,18 +117,19 @@ ggplot(libsize) +
 
 ```
 
-
-### GENES FILTERING: Distribution of expression levels among genes
+<br>
+###Genes filtering: Distribution of expression levels
 ```{r}
 library(geneplotter)
 par(mfrow=c(1,2), mar=c(4,5,1,1))
 ```
-### Distribution of expression levels (All samples)
+
+####Expression levels comparison between all samples
 ```{r}
 multidensity(as.list(as.data.frame(assays(se.filt)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
-## Expression levels comparison between normal and tumor
+####Expression levels comparison between normal and tumor
 ```{r}
 normalCPMnorm <- se.filt[,se.filt$type == "normal"]
 tumorCPMnorm <- se.filt[,se.filt$type == "tumor"]
@@ -141,8 +137,7 @@ multidensity(as.list(as.data.frame(assays(normalCPMnorm)$logCPMnorm)), xlab = "l
 multidensity(as.list(as.data.frame(assays(tumorCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
-
-### Distribution of expression levels among genes
+####Distribution of expression levels among genes
 ```{r}
 genemean <- data.frame(Means=rowMeans(assays(se.filt)$logCPM[,-1]))
 
@@ -151,7 +146,8 @@ ggplot(genemean) +
   theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
   geom_vline(xintercept=mean(genemean$Means), color="red")
 ```
-#### Gene Filter by expression level
+
+EXPLICACIÓ PERQUÈ FEM EL FILTRE SEGÜENT
 ```{r}
 avgexp <- rowMeans(assays(se.filt)$logCPM)
 mask <- avgexp > mean(genemean$Means)
@@ -165,8 +161,8 @@ dge.filt <- dge.filt[mask, ]
 dim(dge.filt) # After filtering DGE
 
 ```
-
-## MA-plots
+<br>
+###MA-plots
 
 ```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
 par(mfrow=c(12, 3 ), mar=c(4, 4, 3, 1))
@@ -183,8 +179,8 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
-
-## BATCH IDENTIFICATION
+<br>
+###Batch identification
 ```{r}
 tss <- substr(colnames(se.filt.genes), 6, 7)
 table(tss)
@@ -205,8 +201,8 @@ colnames(se.filt.genes)[portionanalyte == "11R"]
 table(data.frame(TYPE=se.filt.genes$type, TSS=tss))
 ```
 
-
-## TSS BATCH EFFECT
+<br>
+####TSS batch effect
 ```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -235,8 +231,8 @@ legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
 ```
 
-
-## PLATE BATCH EFFECT
+<br>
+####PLATE batch effect
 ```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -264,8 +260,9 @@ plotMDS(dge.filt, labels=outcome, col=batch)
 legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
 ```
+<br>
 
-##PORTIONANALYTE BATCH EFFECT
+####PORTION-ANALYTE batch effect
 ```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -294,7 +291,8 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
        fill=sort(unique(batch)), inset=0.05)
 
 ```
-## SVA
+<br><br>
+###Surrogate variable analysis
 
 ```{r}
 library(sva)
