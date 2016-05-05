@@ -4,38 +4,37 @@
 ## Table of Contents
 
 - [LOADING DATA](#loading-data)
-	- [Explore phenotypic data](#explore-phenotypic-data)
-	- [Explore feature data](#explore-feature-data)
+	- [Explore phenotypic data](#exploring-phenotypic-data)
+	- [Explore feature data](#exploring-feature-data)
 	- [DGE object](#dge-object)
-- [QUALITY AND NORMALIZATION](#quality-normalization)
-	- [Paired samples](#remove-paired-samples)
-	- [Library size filtering](#library-size)
+- [QUALITY AND NORMALIZATION](#quality-&-normalization)
+	- [Paired samples](#paired-samples-removing)
+	- [Library size filtering](#library-size-filtering)
 	- [Genes Filtering: Distribution of expression levels among genes](#genes-filtering-distribution-of-expression-levels-among-genes)
-		- [Expression levels comparison between all sampes](#distribution-of-expression-levels-all-samples)
+		- [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
 	  - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
 		- [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
 	- [MA-plots](#ma-plots)
 	- [BATCH IDENTIFICATION](#batch-identification)
 	  - [TSS batch effect](#tss-batch-effect)
 	  - [PLATE batch effect](#plate-batch-effect)
-	  - [PORTION-ANALYTE batch effect](#portionanalyte-batch-effect)
-	- [Surrogate variable analysis](#sva)
+	  - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
+	- [Surrogate variable analysis](#surrogate-variable-analysis)
 
 
-<br><br>
 ```
 library(knitr)     ## required for "knitting" from Rmd to md
 library(markdown)  ## required for processing from md to HTML
 knit2html("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/project.Rmd")  ## process Rmd to HTML
 browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```
-<br>
+
 
 ##LOADING DATA
 ```{r}
 library(SummarizedExperiment)
 
-se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 se
 ```
 
@@ -61,13 +60,14 @@ dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
-<br><br>
+
 #QUALITY & NORMALIZATION
 ```{r}
 dgenorm <- calcNormFactors(dge)
 assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
-<br>
+
+
 ##Paired samples removing
 
 EXPLICACION
@@ -88,7 +88,7 @@ common.samples
 dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
 ```
 
-<br>
+
 ##Library size filtering
 ```{r}
 library(ggplot2)
@@ -137,7 +137,7 @@ ggplot(libsize) +
 
 ```
 
-<br>
+
 ###Genes filtering: Distribution of expression levels
 ```{r}
 library(geneplotter)
@@ -181,7 +181,8 @@ dge.filt <- dge.filt[mask, ]
 dim(dge.filt) # After filtering DGE
 
 ```
-<br>
+
+
 ###MA-plots
 
 ```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
@@ -199,7 +200,7 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
-<br>
+
 ###Batch identification
 ```{r}
 tss <- substr(colnames(se.filt.genes), 6, 7)
@@ -220,7 +221,6 @@ colnames(se.filt.genes)[portionanalyte == "11R"]
 
 ```
 
-<br>
 
 ####TSS batch effect
 
@@ -255,7 +255,8 @@ legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
 ```
 
-<br>
+
+
 ####PLATE batch effect
 
 ```{r}
@@ -289,7 +290,7 @@ plotMDS(dge.filt, labels=outcome, col=batch)
 legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
 ```
-<br>
+
 
 ####PORTION-ANALYTE batch effect
 
@@ -324,7 +325,9 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
        fill=sort(unique(batch)), inset=0.05)
 
 ```
-<br><br>
+
+
+
 ###Surrogate variable analysis
 
 ```{r}
