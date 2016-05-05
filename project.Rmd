@@ -17,7 +17,7 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```{r}
 library(SummarizedExperiment)
 
-se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -183,3 +183,4 @@ for (i in 1:ncol(setmp)) {
   lines(lo$x, lo$y, col="red", lwd=2)
 }
 ```
+
