@@ -17,7 +17,7 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```{r}
 library(SummarizedExperiment)
 
-se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -182,4 +182,24 @@ for (i in 1:ncol(setmp)) {
   lo <- lowess(M ~ A)
   lines(lo$x, lo$y, col="red", lwd=2)
 }
+```
+
+## SVA
+
+```{r}
+library(sva)
+mod <- model.matrix(~ se.filt.genes$type, colData(se.filt.genes))
+modzero <- model.matrix(~ 1, colData(se.filt.genes))
+pv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, mod, modzero)
+sum(p.adjust(pv, method="fdr") < 0.01)
+hist(pv,main="",las=1)
+
+sv <- sva(assays(se.filt.genes)$logCPMnorm, mod, modzero)
+sv$n
+modsv <- cbind(mod, sv$sv)
+modzerosv <- cbind(modzero, sv$sv)
+pvsv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modsv, modzerosv)
+sum(p.adjust(pvsv, method="fdr") < 0.01)
+hist(pvsv,main="",las=1)
+
 ```
