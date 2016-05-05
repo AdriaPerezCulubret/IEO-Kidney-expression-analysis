@@ -205,6 +205,8 @@ colnames(se.filt.genes)[portionanalyte == "11R"]
 table(data.frame(TYPE=se.filt.genes$type, TSS=tss))
 ```
 
+
+## TSS BATCH EFFECT
 ```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -227,6 +229,14 @@ legend("topright", paste("TSS", sort(unique(batch)), levels(factor(tss))), fill=
 
 ```
 
+```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
+       fill=sort(unique(batch)), inset=0.05)
+```
+
+
+## PLATE BATCH EFFECT
 ```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -249,6 +259,13 @@ legend("topright", paste("PLATE", sort(unique(batch)), levels(factor(plate))), f
 
 ```
 
+```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
+       fill=sort(unique(batch)), inset=0.05)
+```
+
+##PORTIONANALYTE BATCH EFFECT
 ```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.filt.genes)$logCPMnorm, method="spearman"))
@@ -271,4 +288,8 @@ legend("topright", paste("Portionanalyte", sort(unique(batch)), levels(factor(po
 
 ```
 
-
+```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))),
+       fill=sort(unique(batch)), inset=0.05)
+```
