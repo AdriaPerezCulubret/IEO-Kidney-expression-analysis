@@ -34,7 +34,7 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```{r}
 library(SummarizedExperiment)
 
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 se
 ```
 
@@ -202,6 +202,9 @@ for (i in 1:ncol(setmp)) {
 
 
 ###Batch identification
+
+<Now we're going to analyze our data in order to search for batch effect that could interfere with the biological signal. First, we analyze some of the information contained in the barcode, such as tissue source site, center of sequenciation, plate and portion and analyte combinations. We use two approaches to try to identify batch effect, the Hierarchical Clustering and a Multidimensional Scaling plot.
+
 ```{r}
 tss <- substr(colnames(se.filt.genes), 6, 7)
 table(tss)
@@ -213,12 +216,6 @@ portionanalyte <- substr(colnames(se.filt.genes), 18, 20)
 table(portionanalyte)
 samplevial <- substr(colnames(se.filt.genes), 14, 16)
 table(samplevial)
-#dge.filt
-#se.filt.genes
-
-colnames(se.filt.genes)[portionanalyte == "02R"]
-colnames(se.filt.genes)[portionanalyte == "11R"]
-
 ```
 
 
@@ -326,10 +323,12 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 ```
 
+<The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering(...)
 
 
 ###Surrogate variable analysis
 
+In order to clearly identify which values are affecting our outcome, we use the Surrogate Variable Analysis (SVA) package to find those surrogate variables that are interfering in the biological variability, and adjust for this non-biological (batch effect) variability.
 ```{r}
 library(sva)
 mod <- model.matrix(~ se.filt.genes$type, colData(se.filt.genes))
@@ -345,3 +344,16 @@ modzerosv <- cbind(modzero, sv$sv)
 pvsv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modsv, modzerosv)
 sum(p.adjust(pvsv, method="fdr") < 0.01)
 hist(pvsv,main="",las=1)
+```
+
+## TSS Test
+
+tss testillo
+
+```{r}
+modtss <- model.matrix(~ se.filt.genes$type + tss, colData(se.filt.genes))
+modtsszero <- model.matrix(~ tss, colData(se.filt.genes))
+pvtss <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modtss, modtsszero)
+sum(p.adjust(pvtss, method="fdr") < 0.01)
+hist(pvtss, main="", las=1)
+```
