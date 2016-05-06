@@ -197,11 +197,11 @@ dim(dge.filt) # After filtering DGE
 
 ###MA-plots
 
-We look at the MA-plots of the normal samples, to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
+We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
 
 
-```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
-par(mfrow=c(12, 3 ), mar=c(4, 4, 3, 1))
+```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
+par(mfrow=c(9, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.filt.genes[, se.filt.genes$type == "normal"]
 dgetmp <- dge.filt[, se.filt.genes$type == "normal"]
 for (i in 1:ncol(setmp)) {
@@ -219,8 +219,20 @@ As we can see, we don't see any samples with major biases in gene expression.
 
 Now, we examine the tumor samples:
 
-```{r}
 
+```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(45, 4 ), mar=c(2, 2, 1, 1))
+setmp <- se.filt.genes[, se.filt.genes$type == "tumor"]
+dgetmp <- dge.filt[, se.filt.genes$type == "tumor"]
+for (i in 1:ncol(setmp)) {
+  A <- rowMeans(assays(setmp)$logCPMnorm)
+  M <- assays(setmp)$logCPMnorm[, i] - A
+  samplename <- substr(as.character(setmp$bcr_patient_barcode[i]), 1, 12)
+  smoothScatter(A, M, main=samplename, las=1)
+  abline(h=0, col="blue", lwd=2)
+  lo <- lowess(M ~ A)
+  lines(lo$x, lo$y, col="red", lwd=2)
+}
 ```
 
 <br/>   
@@ -349,6 +361,11 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
        fill=sort(unique(batch)), inset=0.05)
 
 ```
+
+
+### Filtering out samples
+
+4770, 4698, 6087, 4983
 
 
 <br/>   
