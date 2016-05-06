@@ -374,12 +374,7 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 ```
 
-The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering(...)
-
-
-### Filtering out samples
-
-4770, 4698, 6087, 4983
+The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering(...), so we should consider taking apart this samples.
 
 
 <br/>   
@@ -415,14 +410,4 @@ hist(pvsv,main="",las=1)
 The SVA has found 27 surrogate variables, and adjusting for all of them increases the differentialy expressed genes to a number of 8796 genes.
 
 
-## TSS Test
 
-tss testillo
-
-```{r}
-modtss <- model.matrix(~ se.filt.genes$type + tss, colData(se.filt.genes))
-modtsszero <- model.matrix(~ tss, colData(se.filt.genes))
-pvtss <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modtss, modtsszero)
-sum(p.adjust(pvtss, method="fdr") < 0.01)
-hist(pvtss, main="", las=1)
-```
