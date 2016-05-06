@@ -1,4 +1,3 @@
-
 #KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
 ## Table of Contents
@@ -28,7 +27,9 @@ library(markdown)  ## required for processing from md to HTML
 knit2html("~/Dropbox/Home/Documentos/MASTER/IEO/KIDNEY/project.Rmd")  ## process Rmd to HTML
 browseURL("projectTemplate.html") ## open the resulting HTML file from R
 ```
+<br/>     
 
+<br/>   
 
 ##LOADING DATA
 ```{r}
@@ -37,6 +38,7 @@ library(SummarizedExperiment)
 se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 se
 ```
+<br/>   
 
 ###Exploring phenotypic data
 
@@ -45,12 +47,14 @@ dim(colData(se))
 colData(se)[1:5, 1:5]
 mcols(colData(se), use.names=TRUE)
 ```
+<br/>   
 
 ###Exploring feature data
 ```{r}
 rowRanges(se)
 ```
 
+<br/>   
 
 ###DGE object
 ```{r}
@@ -60,6 +64,9 @@ dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
+<br/>   
+
+<br/>   
 
 #QUALITY & NORMALIZATION
 ```{r}
@@ -67,6 +74,7 @@ dgenorm <- calcNormFactors(dge)
 assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
 
+<br/>   
 
 ##Paired samples removing
 
@@ -75,6 +83,7 @@ EXPLICACION
 ```{r}
 normal.samples <- se[,se$type == "normal"]
 tumor.samples  <- se[,se$type == "tumor"]
+
 
 dge.normal <- DGEList(counts=assays(normal.samples)$counts, genes=mcols(normal.samples))
 dge.tumor  <- DGEList(counts=assays(tumor.samples)$counts, genes=mcols(tumor.samples))
@@ -88,6 +97,7 @@ common.samples
 dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
 ```
 
+<br/>   
 
 ##Library size filtering
 ```{r}
@@ -137,6 +147,7 @@ ggplot(libsize) +
 
 ```
 
+<br/>   
 
 ###Genes filtering: Distribution of expression levels
 ```{r}
@@ -182,8 +193,12 @@ dim(dge.filt) # After filtering DGE
 
 ```
 
+<br/>   
 
 ###MA-plots
+
+We look at the MA-plots of the normal samples, to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
+
 
 ```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
 par(mfrow=c(12, 3 ), mar=c(4, 4, 3, 1))
@@ -200,6 +215,15 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+As we can see, we don't see any samples with major biases in gene expression.
+
+Now, we examine the tumor samples:
+
+```{r}
+
+```
+
+<br/>   
 
 ###Batch identification
 ```{r}
@@ -327,6 +351,7 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 ```
 
 
+<br/>   
 
 ###Surrogate variable analysis
 
