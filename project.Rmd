@@ -63,44 +63,26 @@ rowRanges(se)
 
 
 ###DGE object
-We create a DGE object with DGEList to hold the dataset to be analysed in a better and more comprehensive way
+We create a DGEList' object to hold the dataset to be analysed in a better and more comprehensive way.
 ```{r}
 library(edgeR)
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
+```
+Moreover, we calculate $\log_2$ CPM values of expression and we save them in an assay element.
+```{r}
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
 
 #QUALITY & NORMALIZATION
-<
-```{r}
-dgenorm <- calcNormFactors(dge)
-assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
-```
-
-
 ##Paired samples removing
-
-EXPLICACION
-
 ```{r}
-normal.samples <- se[,se$type == "normal"]
-tumor.samples  <- se[,se$type == "tumor"]
-
-dge.normal <- DGEList(counts=assays(normal.samples)$counts, genes=mcols(normal.samples))
-dge.tumor  <- DGEList(counts=assays(tumor.samples)$counts, genes=mcols(tumor.samples))
-
-normal.samples <- rownames(dge.normal$samples)
-tumor.samples  <- rownames(dge.tumor$samples)
-
-common.samples <- intersect(normal.samples,tumor.samples)
-common.samples
-
-dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
+dge.filt <- dge
 ```
-
 
 ##Library size filtering
+At this point, we need to determine 
+
 ```{r}
 library(ggplot2)
 
@@ -155,17 +137,19 @@ library(geneplotter)
 par(mfrow=c(1,2), mar=c(4,5,1,1))
 ```
 
+
+
 ####Expression levels comparison between all samples
 ```{r}
-multidensity(as.list(as.data.frame(assays(se.filt)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+multidensity(as.list(as.data.frame(assays(se.filt)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
 ####Expression levels comparison between normal and tumor
 ```{r}
-normalCPMnorm <- se.filt[,se.filt$type == "normal"]
-tumorCPMnorm <- se.filt[,se.filt$type == "tumor"]
-multidensity(as.list(as.data.frame(assays(normalCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
-multidensity(as.list(as.data.frame(assays(tumorCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+normalCPM <- se.filt[,se.filt$type == "normal"]
+tumorCPM <- se.filt[,se.filt$type == "tumor"]
+multidensity(as.list(as.data.frame(assays(normalCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
 ####Distribution of expression levels among genes
@@ -191,6 +175,19 @@ dim(dge.filt) # Before filtering DGE
 dge.filt <- dge.filt[mask, ]
 dim(dge.filt) # After filtering DGE
 
+```
+
+```{r}
+dgenorm <- calcNormFactors(dge.filt)
+assays(se.filt.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
+```
+
+
+```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
+ord <- order(dge.filt$sample$lib.size/1e6)
+barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
+        xlab="Samples", col=c("blue", "red")[(se.filt.genes$type[ord] == "tumor") + 1])
+legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
 ```
 
 
@@ -231,7 +228,6 @@ colnames(se.filt.genes)[portionanalyte == "02R"]
 colnames(se.filt.genes)[portionanalyte == "11R"]
 
 ```
-
 
 ####TSS batch effect
 
@@ -336,8 +332,6 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
        fill=sort(unique(batch)), inset=0.05)
 
 ```
-
-
 
 ###Surrogate variable analysis
 
