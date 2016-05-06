@@ -31,65 +31,59 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 
 
 ##LOADING DATA
+
 ```{r}
 library(SummarizedExperiment)
+```
 
+
+We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
+```{r}
 se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 se
 ```
 
 ###Exploring phenotypic data
 
+<We take a look to the column data, which include the phenotipic information of all samples,of the sumarized experiment object.
 ```{r}
 dim(colData(se))
 colData(se)[1:5, 1:5]
+```
+We also need to observe to the metadata information content of these data.
+```{r}
 mcols(colData(se), use.names=TRUE)
 ```
+As we can see there are three different columns on the metadata result. The first column is the name of all the variables; the second is the labelDescription, which is the definition of each variable; and the last one corresponding to the Common Data Element Identifier (CDEID).
 
 ###Exploring feature data
+We look through the data rows, which are the feature elements, to see the genes information of our data set.
 ```{r}
 rowRanges(se)
 ```
 
 
 ###DGE object
+We create a DGEList' object to hold the dataset to be analysed in a better and more comprehensive way.
 ```{r}
 library(edgeR)
-
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
+```
+Moreover, we calculate $\log_2$ CPM values of expression and we save them in an assay element.
+```{r}
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
 
 #QUALITY & NORMALIZATION
-```{r}
-dgenorm <- calcNormFactors(dge)
-assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
-```
-
-
 ##Paired samples removing
-
-EXPLICACION
-
 ```{r}
-normal.samples <- se[,se$type == "normal"]
-tumor.samples  <- se[,se$type == "tumor"]
-
-dge.normal <- DGEList(counts=assays(normal.samples)$counts, genes=mcols(normal.samples))
-dge.tumor  <- DGEList(counts=assays(tumor.samples)$counts, genes=mcols(tumor.samples))
-
-normal.samples <- rownames(dge.normal$samples)
-tumor.samples  <- rownames(dge.tumor$samples)
-
-common.samples <- intersect(normal.samples,tumor.samples)
-common.samples
-
-dge.filt <- dge[, !rownames(dge$samples) %in% common.samples]
+dge.filt <- dge
 ```
-
 
 ##Library size filtering
+At this point, we need to determine
+
 ```{r}
 library(ggplot2)
 
@@ -144,17 +138,19 @@ library(geneplotter)
 par(mfrow=c(1,2), mar=c(4,5,1,1))
 ```
 
+
+
 ####Expression levels comparison between all samples
 ```{r}
-multidensity(as.list(as.data.frame(assays(se.filt)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+multidensity(as.list(as.data.frame(assays(se.filt)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
 ####Expression levels comparison between normal and tumor
 ```{r}
-normalCPMnorm <- se.filt[,se.filt$type == "normal"]
-tumorCPMnorm <- se.filt[,se.filt$type == "tumor"]
-multidensity(as.list(as.data.frame(assays(normalCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
-multidensity(as.list(as.data.frame(assays(tumorCPMnorm)$logCPMnorm)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+normalCPM <- se.filt[,se.filt$type == "normal"]
+tumorCPM <- se.filt[,se.filt$type == "tumor"]
+multidensity(as.list(as.data.frame(assays(normalCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
 ####Distribution of expression levels among genes
@@ -182,11 +178,27 @@ dim(dge.filt) # After filtering DGE
 
 ```
 
+```{r}
+dgenorm <- calcNormFactors(dge.filt)
+assays(se.filt.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
+```
+
+
+```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
+ord <- order(dge.filt$sample$lib.size/1e6)
+barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
+        xlab="Samples", col=c("blue", "red")[(se.filt.genes$type[ord] == "tumor") + 1])
+legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
+```
+
 
 ###MA-plots
 
-```{r maPlotsTumor, fig.height=36, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
-par(mfrow=c(12, 3 ), mar=c(4, 4, 3, 1))
+We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
+
+
+```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
+par(mfrow=c(9, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.filt.genes[, se.filt.genes$type == "normal"]
 dgetmp <- dge.filt[, se.filt.genes$type == "normal"]
 for (i in 1:ncol(setmp)) {
@@ -200,10 +212,30 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+As we can see, we don't see any samples with major biases in gene expression.
+
+Now, we examine the tumor samples:
+
+```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(45, 4 ), mar=c(2, 2, 1, 1))
+setmp <- se.filt.genes[, se.filt.genes$type == "tumor"]
+dgetmp <- dge.filt[, se.filt.genes$type == "tumor"]
+for (i in 1:ncol(setmp)) {
+  A <- rowMeans(assays(setmp)$logCPMnorm)
+  M <- assays(setmp)$logCPMnorm[, i] - A
+  samplename <- substr(as.character(setmp$bcr_patient_barcode[i]), 1, 12)
+  smoothScatter(A, M, main=samplename, las=1)
+  abline(h=0, col="blue", lwd=2)
+  lo <- lowess(M ~ A)
+  lines(lo$x, lo$y, col="red", lwd=2)
+}
+```
+
+<br/>   
 
 ###Batch identification
 
-<Now we're going to analyze our data in order to search for batch effect that could interfere with the biological signal. First, we analyze some of the information contained in the barcode, such as tissue source site, center of sequenciation, plate and portion and analyte combinations. We use two approaches to try to identify batch effect, the Hierarchical Clustering and a Multidimensional Scaling plot.
+Now we're going to analyze our data in order to search for batch effect that could interfere with the biological signal. First, we analyze some of the information contained in the barcode, such as tissue source site, center of sequenciation, plate and portion and analyte combinations. We use two approaches to try to identify batch effect, the Hierarchical Clustering and a Multidimensional Scaling plot.
 
 ```{r}
 tss <- substr(colnames(se.filt.genes), 6, 7)
@@ -217,6 +249,8 @@ table(portionanalyte)
 samplevial <- substr(colnames(se.filt.genes), 14, 16)
 table(samplevial)
 ```
+
+<br/>  
 
 
 ####TSS batch effect
@@ -252,6 +286,7 @@ legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
 ```
 
+<br/>  
 
 
 ####PLATE batch effect
@@ -288,6 +323,8 @@ legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
 ```
 
+<br/>  
+
 
 ####PORTION-ANALYTE batch effect
 
@@ -323,8 +360,15 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 ```
 
-<The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering(...)
+The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering(...)
 
+
+### Filtering out samples
+
+4770, 4698, 6087, 4983
+
+
+<br/>   
 
 ###Surrogate variable analysis
 
@@ -336,7 +380,13 @@ modzero <- model.matrix(~ 1, colData(se.filt.genes))
 pv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, mod, modzero)
 sum(p.adjust(pv, method="fdr") < 0.01)
 hist(pv,main="",las=1)
+```
 
+<br/>  
+
+This is the p-value distribution of our set of genes. It shows a clear peak at low p-values, refered to those genes that are differently expressed between normal and tumor types of samples. We have a total of 7578 differently expressed genes. Now, let's perform an SVA and adjust for the non-biological variability
+
+```{r}
 sv <- sva(assays(se.filt.genes)$logCPMnorm, mod, modzero)
 sv$n
 modsv <- cbind(mod, sv$sv)
@@ -345,6 +395,11 @@ pvsv <- f.pvalue(assays(se.filt.genes)$logCPMnorm, modsv, modzerosv)
 sum(p.adjust(pvsv, method="fdr") < 0.01)
 hist(pvsv,main="",las=1)
 ```
+
+<br/>  
+
+The SVA has found 27 surrogate variables, and adjusting for all of them increases the differentialy expressed genes to a number of 8796 genes.
+
 
 ## TSS Test
 
