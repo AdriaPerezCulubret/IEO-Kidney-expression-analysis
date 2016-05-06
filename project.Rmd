@@ -31,15 +31,20 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 
 
 ##LOADING DATA
+
 ```{r}
 library(SummarizedExperiment)
+```
 
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+<We load the RNA-seq data set of Kidney renal clear-cell-carcinoma.
+```{r}
+se <- readRDS(file.path("~/Documents/1.Master/Github/KIDNEY/seKIRC.rds"))
 se
 ```
 
 ###Exploring phenotypic data
 
+<We take a look to the data of all samples of the sumarized experiment object.
 ```{r}
 dim(colData(se))
 colData(se)[1:5, 1:5]
@@ -47,21 +52,23 @@ mcols(colData(se), use.names=TRUE)
 ```
 
 ###Exploring feature data
+<We look through the rowRanges to see the genes information of our data set.
 ```{r}
 rowRanges(se)
 ```
 
 
 ###DGE object
+< We create a DGE object with DGEList to hold the dataset to be analysed in a better and more comprehensive way
 ```{r}
 library(edgeR)
-
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
 
 #QUALITY & NORMALIZATION
+<
 ```{r}
 dgenorm <- calcNormFactors(dge)
 assays(se)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
