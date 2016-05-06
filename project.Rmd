@@ -81,7 +81,7 @@ dge.filt <- dge
 ```
 
 ##Library size filtering
-At this point, we need to determine
+At this point, we need to determine if the library sizes of tumor samples and normal samples are similar or not.
 
 ```{r}
 library(ggplot2)
@@ -95,12 +95,25 @@ ggplot(libsize) +
   geom_density(aes(x=libsize, fill=type), alpha=0.5) +
   ylab("density\n") + xlab("\nMillions of Reads") +
   theme_bw()
+```
 
+This past figure shows the density distribution on sequencing depth (milions of reads). 
+
+```{r}
 ggplot(libsize) +
   geom_histogram(
     aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
   ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
+```
 
+In this other figure, we can see now the proporcion of samples in each sequencing depth (Milions of Reads).
+
+As we can see, both figures show that the normal and tumor samples are similar in terms of sequencing depth, except for some samples that show extreme values.
+
+Moreover, we can see how both normal and tumor types, follow a normal distribution through the sequencing depth.
+
+At this point, we can filter out those samples with a low sequencing depth (<50 Milions of reads) because they are less reliable. Furthermore, we also remove the samples with extreme values explained before (>70 Milions of Reads).
+```{r}
 dge.filt <- dge.filt[, dge.filt$sample$lib.size/1e6 > 50 & dge.filt$sample$lib.size/1e6 < 70]
 
 
@@ -108,28 +121,25 @@ final.samples <- rownames(dge.filt$samples)
 
 se.filt <-se[,colnames(se) %in% final.samples]
 
-summary(se.filt$samples)
-
-
 ```
-
-POSAR EXPLICACIÓ: EL SEGÜENT, ÉS DESPRÉS DE FILTAR
+These are the numbers of tumor and normal samples before filtering
 ```{r}
-
-summary(se.filt$type)
-
-ggplot(libsize) +
-  geom_histogram(
-    aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=3
-  ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw() + xlim(c(25, 71))
-
-ggplot(libsize) +
-  geom_density(aes(x=libsize, fill=type), alpha=0.5) +
-  ylab("density\n") + xlab("\nMillions of Reads") +
-  theme_bw() + xlim(c(25, 71))
-
+summary(se$type)
 ```
 
+And now after filtering:
+```{r}
+summary(se.filt$type)
+```
+
+As we can see in the following figure, the distribution of normal and tumor samples is very similar:
+
+```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
+ord <- order(dge.filt$sample$lib.size/1e6)
+barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
+        xlab="Samples", col=c("blue", "red")[(se.filt.genes$type[ord] == "tumor") + 1])
+legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
+```
 
 ###Genes filtering: Distribution of expression levels
 ```{r}
@@ -137,12 +147,16 @@ library(geneplotter)
 par(mfrow=c(1,2), mar=c(4,5,1,1))
 ```
 
-
-
 ####Expression levels comparison between all samples
+In the next part, we take a look on the distribution of expression values per sample in terms of logarithmic CPM units.
+
 ```{r}
 multidensity(as.list(as.data.frame(assays(se.filt)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
+
+We cannot observe significant diferences between samples in terms of expression levels.
+
+As we have more than 200 samples, we now display the normal and tumor distribution separately.
 
 ####Expression levels comparison between normal and tumor
 ```{r}
@@ -153,6 +167,7 @@ multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM",
 ```
 
 ####Distribution of expression levels among genes
+Now, we want to filter out the genes with a low expression. To do that, we can plot the CPMs in logarithmic scale.
 ```{r}
 genemean <- data.frame(Means=rowMeans(assays(se.filt)$logCPM[,-1]))
 
@@ -162,34 +177,33 @@ ggplot(genemean) +
   geom_vline(xintercept=mean(genemean$Means), color="red")
 ```
 
-EXPLICACIÓ PERQUÈ FEM EL FILTRE SEGÜENT
+We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used the mean as a threshold.
 ```{r}
 avgexp <- rowMeans(assays(se.filt)$logCPM)
 mask <- avgexp > mean(genemean$Means)
+```
 
+These are the numbers of genes before filtering:
+```{r}
 dim(se.filt) # Before filtering SE
+dim(dge.filt) # Before filtering DGE
+```
+
+These are the numbers of samples genes after filtering:
+```{r}
 se.filt.genes <- se.filt[mask, ]
 dim(se.filt.genes) # After filtering SE
 
-dim(dge.filt) # Before filtering DGE
 dge.filt <- dge.filt[mask, ]
 dim(dge.filt) # After filtering DGE
 
 ```
 
+At this point, we can calculate the normaliation factors on the filtered expression data set.
 ```{r}
 dgenorm <- calcNormFactors(dge.filt)
 assays(se.filt.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
-
-
-```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
-ord <- order(dge.filt$sample$lib.size/1e6)
-barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
-        xlab="Samples", col=c("blue", "red")[(se.filt.genes$type[ord] == "tumor") + 1])
-legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
-```
-
 
 ###MA-plots
 
