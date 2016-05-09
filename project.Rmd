@@ -425,7 +425,7 @@ hist(pv,main="",las=1)
 
 <br/>  
 
-This is the p-value distribution of our set of genes. It shows a clear peak at low p-values, refered to those genes that are differently expressed between normal and tumor types of samples. We have a total of 7,578 differently expressed genes. Now, let's perform an SVA and adjust for the non-biological variability
+This is the p-value distribution of our set of genes. It shows a clear peak at low p-values, refered to those genes that are differently expressed between normal and tumor types of samples. We have a total of 7,521 differently expressed genes. Now, let's perform an SVA and adjust for the non-biological variability
 
 ```{r}
 sv <- sva(assays(se.filt.genes)$logCPMnorm, mod, modzero)
@@ -439,15 +439,15 @@ hist(pvsv,main="",las=1)
 
 <br/>  
 
-The SVA has found 27 surrogate variables, and adjusting for all of them increases the differentialy expressed genes to a number of 8796 genes.
+The SVA has found 24 surrogate variables, and adjusting for all of them increases the differentialy expressed genes to a number of 8750 genes.
 
 <br/>
 
 ## CONCLUSIONS
-After the analysis of the RNA-seq data of Kidney clear-cell-carcinoma, we have found 8,796 differentialy expressed genes between normal and tumor samples out of the 11,407 genes. 
+After the analysis of the RNA-seq data of Kidney clear-cell-carcinoma, we have found 8,750 differentialy expressed genes between normal and tumor samples out of the 11,407 genes. 
 
 We didn't find any significant batch effect out of the analysis of the four feature present in the sample barcode (tss, plate, center and portion-analyte). 
 
 The hierarchical clustering showed four samples that clustered apart from the other samples, for this reason, they could be removed from the set.
 
-We also performed a surrogate variable analysis to exclude any non-biological variation. We found 27 surrogate variables. 
+We also performed a surrogate variable analysis to exclude any non-biological variation. We found 24 surrogate variables. 
