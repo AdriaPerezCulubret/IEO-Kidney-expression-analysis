@@ -65,22 +65,42 @@ rowRanges(se)
 ```
 
 
+#QUALITY & NORMALIZATION
+##Paired samples removing
+
+
+
+```{r}
+se.normal <- se[,se$type == "normal"]
+se.tumor <- se[,se$type == "tumor"]
+
+normal.code <- substr(colnames(se.normal), 9, 12)
+tumor.code <- substr(colnames(se.tumor), 9, 12)
+
+common.codes <- intersect(normal.code, tumor.code)
+
+length(common.codes)
+length(normal.code)
+length(tumor.code)
+se.nonpaired <- se[,(!substr(colnames(se), 9, 12) %in% common.codes & se$type == "tumor") | se$type == "normal"]
+
+length(common.codes) # Number of common samples in tumor and normal
+colData(se.normal) # Before filtering
+
+table(se.nonpaired$type) # After filteron
+
+```
+
+
 ###DGE object
 We create a DGEList' object to hold the dataset to be analysed in a better and more comprehensive way.
 ```{r}
 library(edgeR)
-dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
+dge.filt <- DGEList(counts=assays(se.nonpaired)$counts, genes=mcols(se.nonpaired))
 ```
 Moreover, we calculate $\log_2$ CPM values of expression and we save them in an assay element.
 ```{r}
-assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
-```
-
-
-#QUALITY & NORMALIZATION
-##Paired samples removing
-```{r}
-dge.filt <- dge
+assays(se.nonpaired)$logCPM <- cpm(dge.filt, log=TRUE, prior.count=0.5)
 ```
 
 ##Library size filtering
@@ -89,7 +109,7 @@ At this point, we need to determine if the library sizes of tumor samples and no
 ```{r}
 library(ggplot2)
 
-libsize <- data.frame(libsize = dge$sample$lib.size/1e6, type = se$type)
+libsize <- data.frame(libsize = dge.filt$sample$lib.size/1e6, type = se.nonpaired$type)
 
 summary(libsize)
 
@@ -109,7 +129,7 @@ ggplot(libsize) +
   ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
 ```
 
-In this other figure, we can see now the proporcion of samples in each sequencing depth (Milions of Reads).
+In this other figure, we can see now the proportion of samples in each sequencing depth (Milions of Reads).
 
 As we can see, both figures show that the normal and tumor samples are similar in terms of sequencing depth, except for some samples that show extreme values.
 
@@ -122,7 +142,7 @@ dge.filt <- dge.filt[, dge.filt$sample$lib.size/1e6 > 50 & dge.filt$sample$lib.s
 
 final.samples <- rownames(dge.filt$samples)
 
-se.filt <-se[,colnames(se) %in% final.samples]
+se.filt <-se.nonpaired[,colnames(se.nonpaired) %in% final.samples]
 
 ```
 These are the numbers of tumor and normal samples before filtering
