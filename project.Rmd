@@ -67,8 +67,7 @@ rowRanges(se)
 
 #QUALITY & NORMALIZATION
 ##Paired samples removing
-
-
+We proceed to remove the paired samples (those samples that are from the same patient in tumor and normal). 
 
 ```{r}
 se.normal <- se[,se$type == "normal"]
@@ -79,13 +78,22 @@ tumor.code <- substr(colnames(se.tumor), 9, 12)
 
 common.codes <- intersect(normal.code, tumor.code)
 
-length(common.codes)
-length(normal.code)
-length(tumor.code)
+length(common.codes)# Number of common samples in tumor and normal
+
+```
+
+As we can see, all the "normal" samples are paired; we have 72 common sample codes between "tumor" and "normal". We could perform a paired experiment analysis, but for the moment, we will continue with independent samples to perform this first analysis. We will remove the paired samples from the "tumor" dataset only.
+
+
+```{r}
 se.nonpaired <- se[,(!substr(colnames(se), 9, 12) %in% common.codes & se$type == "tumor") | se$type == "normal"]
 
-length(common.codes) # Number of common samples in tumor and normal
-colData(se.normal) # Before filtering
+```
+
+
+* Number of samples
+```{r}
+table(se$type) # Before filtering
 
 table(se.nonpaired$type) # After filteron
 
@@ -253,7 +261,7 @@ As we can see, we don't see any samples with major biases in gene expression.
 Now, we examine the tumor samples:
 
 ```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
-par(mfrow=c(45, 4 ), mar=c(2, 2, 1, 1))
+par(mfrow=c(36, 4 ), mar=c(2, 2, 1, 1))
 setmp <- se.filt.genes[, se.filt.genes$type == "tumor"]
 dgetmp <- dge.filt[, se.filt.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
@@ -398,7 +406,7 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 <br/>  
 
-The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 4 tumor samples, 4770, 4698, 6087 and 4983 are clustered apart from the other samples in the hierarchical clustering, so we should consider taking apart this samples.
+The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 9 tumor samples cluster apart from the other samples in the hierarchical clustering, so we should consider taking apart this samples.
 
 
 <br/>   
