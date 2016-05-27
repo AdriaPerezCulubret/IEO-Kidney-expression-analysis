@@ -1,4 +1,3 @@
-
 #KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
 ## Table of Contents
@@ -35,6 +34,8 @@ browseURL("projectTemplate.html") ## open the resulting HTML file from R
 
 ```{r}
 library(SummarizedExperiment)
+library(limma)
+library(edgeR)
 ```
 
 
@@ -425,7 +426,16 @@ hist(pv,main="",las=1)
 
 <br/>  
 
-This is the p-value distribution of our set of genes. It shows a clear peak at low p-values, refered to those genes that are differently expressed between normal and tumor types of samples. We have a total of 7,521 differently expressed genes. Now, let's perform an SVA and adjust for the non-biological variability
+This is the p-value distribution of our set of genes. It shows a clear peak at low p-values, refered to those genes that are differently expressed betweesv.voom <- sva(v$E, mod = design, mod0 = mod0)
+design <- cbind(design, sv.voom$sv)
+
+colnames(design) <- c(colnames(design)[1:4], paste0("SV", 1:sv.voom$n))
+
+fit.sva <- lmFit(v, design)
+
+
+fit.sva <- eBayes(fit.sva)
+n normal and tumor types of samples. We have a total of 7,521 differently expressed genes. Now, let's perform an SVA and adjust for the non-biological variability
 
 ```{r}
 sv <- sva(assays(se.filt.genes)$logCPMnorm, mod, modzero)
@@ -451,3 +461,94 @@ We didn't find any significant batch effect out of the analysis of the four feat
 The hierarchical clustering showed four samples that clustered apart from the other samples, for this reason, they could be removed from the set.
 
 We also performed a surrogate variable analysis to exclude any non-biological variation. We found 24 surrogate variables. 
+
+
+## DIFFERENTIAL EXPRESSION ANALYSIS
+
+design <- model.matrix(~type, data = colData(se.filt.genes))
+
+fit <- lmFit(assays(se.filt.genes)$logCPM, design)
+summary(fit)
+fit <- eBayes(fit)
+names(fit)
+
+FDRcutoff <- 0.05
+res <- decideTests(fit, p.value=FDRcutoff)
+summary(res)
+tt <- topTable(fit, coef = 2, n = Inf)
+
+genesmd <- data.frame(chr = as.character(seqnames(rowRanges(se.filt.genes))), symbol=as.character(rowRanges(se.filt.genes)[, 1]), stringsAsFactors = FALSE)
+
+sort(table(tt$chr[tt$adj.P.Val < FDRcutoff]), decreasing=TRUE)
+summary(tt)
+
+library(ggplot2)
+
+par(mfrow = c(1,2), mar  = c(4, 5, 2, 2))
+hist(tt$adj.P.Val, las = 1)
+
+qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main = "")
+abline(0, 1, lwd=2)
+
+
+### MEAN-VARIANCE RELATIONSHIP
+
+v <- voom(dge.filt, design, plot=TRUE)
+
+fit.voom <- lmFit(v, design)
+fit.voom <- eBayes(fit.voom)
+res.voom <- decideTests(fit.voom, p.value = FDRcutoff)
+summary(res.voom)
+summary(res)
+
+
+### ADJUST FOR UNKNOWN COVARIATES
+
+mod0 <- model.matrix(~ 1, colData(se.filt.genes))
+sv.voom <- sva(v$E, mod = design, mod0 = mod0)
+design.voom <- cbind(design, sv.voom$sv)
+
+colnames(design.voom) <- c(colnames(design.voom)[1:4], paste0("SV", 1:sv.voom$n))
+
+fit.sva <- lmFit(v, design.voom)
+
+
+fit.sva <- eBayes(fit.sva)
+
+res.sva <- decideTests(fit.sva, p.value=FDRcutoff)
+summary(res.sva)
+fit.sva$genes <- genesmd
+tt.sva <- topTable(fit.sva, coef = 2, n = Inf)
+head(tt.sva)
+
+par(mfrow = c(1,2), mar = c(4, 5, 2, 2))
+hist(tt.sva$P.Value, xlab = "RAW PVALUE", main ="", las = 1)
+qqt(fit.sva$t[,2], df = fit.sva$df.prior + fit.sva$df.residual, main = "", cex = 3)
+abline(0, 1, lwd = 2)
+
+
+
+# NEW SVA
+
+mod0.new <- model.matrix(~ type + tss, colData(se.filt.genes))
+
+colData(se.filt.genes)$tss   <- as.factor(tss)
+colData(se.filt.genes)$plate <- as.factor(plate)
+colData(se.filt.genes)$portionanalyte <- as.factor(portionanalyte)
+
+
+summary(colData(se.filt.genes)$tss)
+
+
+sv.voom.new <- sva(v$E, mod = design, mod0 = mod0.new)
+design.voom.new <- cbind(design, sv.voom.new$sv)
+
+colnames(design) <- c(colnames(design)[1:4], paste0("SV", 1:sv.voom$n))
+
+fit.sva <- lmFit(v, design)
+
+
+fit.sva <- eBayes(fit.sva)
+
+
+
