@@ -436,3 +436,15 @@ colnames(colData(se.paired.genes))
 ```
 
 
+summary(toptable)
+
+ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
+
+
+under_exp <- toptable[toptable$logFC <= -0.44470 ,]
+over_exp  <- toptable[toptable$logFC >= 0.35090,] 
+
+dim(under_exp)
+dim(over_exp)
+summary(toptable$logFC)
+
