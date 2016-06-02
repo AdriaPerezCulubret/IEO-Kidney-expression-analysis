@@ -86,6 +86,7 @@ length(common.codes)
 
 se.paired <- se.filt[,substr(colnames(se.filt), 9, 12) %in% common.codes]
 summary(se.paired$type)
+colData(se.paired)$samplecodes <- substr(colnames(se.paired), 9, 12)
 ```
 
 
@@ -237,9 +238,48 @@ portionanalyte <- substr(colnames(se.paired.genes), 18, 20)
 table(portionanalyte)
 samplevial <- substr(colnames(se.paired.genes), 14, 16)
 table(samplevial)
+
+
 ```
 
 <br/>  
+
+
+####GENDER batch effect
+
+```{r}
+table(data.frame(TYPE=se.paired.genes$type, GENDER=se.paired.genes$gender))
+```
+
+
+```{r sampleClusteringGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(se.paired.genes$gender))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.paired.genes)
+outcome <- paste(substr(colnames(se.paired.genes), 9, 12), as.character(se.paired.genes$type), sep="-")
+names(outcome) <- colnames(se.paired.genes)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+                               function(x, batch, labels) {
+                                 if (is.leaf(x)) {
+                                   attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+                                   attr(x, "label") <- as.vector(labels[attr(x, "label")])
+                                 }
+                                 x
+                               }, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("TSS", sort(unique(batch)), levels(factor(se.paired.genes$gender))), fill=sort(unique(batch)))
+
+```
+
+```{r mdsGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dge.filt, labels=outcome, col=batch)
+legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
+       fill=sort(unique(batch)), inset=0.05)
+```
+
 
 
 
@@ -361,19 +401,20 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 ### MEAN-VARIANCE RELATIONSHIP
 ```{r}
 
-design <- model.matrix(~type, data = colData(se.paired.genes))
+design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
+summary(design)
+dge.filt
 v <- voom(dge.filt, design, plot=FALSE)
-FDRcutoff <- 0.05
+FDRcutoff <- 0.01
 mod0 <- model.matrix(~ 1, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
 design.voom <- cbind(design, sv$sv)
 
 
-
-fit <- lmFit(v, design.voom)
+fit <- lmFit(v, design)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
 summary(res)
-summary(res)
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
+colnames(design)
 ```
