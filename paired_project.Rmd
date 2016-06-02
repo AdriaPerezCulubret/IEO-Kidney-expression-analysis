@@ -178,7 +178,6 @@ assays(se.paired.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
 
 
-
 ###MA-plots
 
 We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
@@ -207,7 +206,7 @@ Now, we examine the tumor samples:
 ```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
 par(mfrow=c(36, 4 ), mar=c(2, 2, 1, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
-dgetmp <- dge.filt[, se.paired.genes$type == "tumor"]
+dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
   A <- rowMeans(assays(setmp)$logCPMnorm)
   M <- assays(setmp)$logCPMnorm[, i] - A
@@ -253,7 +252,7 @@ table(data.frame(TYPE=se.paired.genes$type, GENDER=se.paired.genes$gender))
 
 
 ```{r sampleClusteringGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
-#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
 batch <- as.integer(factor(se.paired.genes$gender))
@@ -275,7 +274,7 @@ legend("topright", paste("TSS", sort(unique(batch)), levels(factor(se.paired.gen
 ```
 
 ```{r mdsGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
-plotMDS(dge.filt, labels=outcome, col=batch)
+plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
        fill=sort(unique(batch)), inset=0.05)
 ```
@@ -289,7 +288,7 @@ legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paire
 table(data.frame(TYPE=se.paired.genes$type, TSS=tss))
 ```
 ```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
-#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
 batch <- as.integer(factor(tss))
@@ -313,7 +312,7 @@ legend("topright", paste("TSS", sort(unique(batch)), levels(factor(tss))), fill=
 
 
 ```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
-plotMDS(dge.filt, labels=outcome, col=batch)
+plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
 ```
@@ -329,7 +328,7 @@ table(data.frame(TYPE=se.paired.genes$type, PLATE=plate))
 ```
 
 ```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
-#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
 batch <- as.integer(factor(plate))
@@ -351,7 +350,7 @@ legend("topright", paste("PLATE", sort(unique(batch)), levels(factor(plate))), f
 ```
 
 ```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
-plotMDS(dge.filt, labels=outcome, col=batch)
+plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
 ```
@@ -365,7 +364,7 @@ legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
 table(data.frame(TYPE=se.paired.genes$type, P.analyte = portionanalyte))
 ```
 ```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
-#logCPM <- cpm(dge.filt, log=TRUE, prior.count=3)
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
 batch <- as.integer(factor(portionanalyte))
@@ -387,7 +386,7 @@ legend("topright", paste("Portionanalyte", sort(unique(batch)), levels(factor(po
 ```
 
 ```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
-plotMDS(dge.filt, labels=outcome, col=batch)
+plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))),
        fill=sort(unique(batch)), inset=0.05)
 
@@ -403,8 +402,8 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
 summary(design)
-dge.filt
-v <- voom(dge.filt, design, plot=FALSE)
+dgenorm
+v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~ 1, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
@@ -420,9 +419,45 @@ colnames(design)
 
 ```
 
+
+
+```{r}
+toptable <- topTable(fit, coef = 2, n=Inf)
+par(mfrow=c(1,2), mar=c(4,5,2,2))
+hist(toptable$adj.P.Val, xlab="Raw P-values", main = "", las = 1)
+qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main="", pch = ".", cex=3, ylim = c(-50, 50))
+abline(0,1, lwd = 2)
+```
+
+### REPEATED MEASUREMENTS
+```{r}
+corfit <- duplicateCorrelation(v, design, block = )
+
+colnames(colData(se.paired.genes))
+
+```
+
 ### Functional Enrichment ###
 
 ```{r}
+library(GOstats)
+DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+            annotation="org.Hs.eg.db", ontology="BP",
+            pvalueCutoff=0.05, testDirection="over")
+conditional(params) <- TRUE
+hgOver <- hyperGTest(params)
+hgOver
+GOresults <- summary(hgOver)
 
+GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5 & GOresults$OddsRatio != Inf, ]
+GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
+head(GOresults)
 
+GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE ), ]
+head(GOresults)
 ```
+
+
