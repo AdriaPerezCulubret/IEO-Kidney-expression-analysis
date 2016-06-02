@@ -14,7 +14,7 @@ library(org.Hs.eg.db)
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 ```{r}
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -422,6 +422,8 @@ colnames(design)
 
 ```
 
+
+
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
 par(mfrow=c(1,2), mar=c(4,5,2,2))
@@ -436,6 +438,29 @@ corfit <- duplicateCorrelation(v, design, block = )
 
 colnames(colData(se.paired.genes))
 
+```
+
+### Functional Enrichment ###
+
+```{r}
+library(GOstats)
+DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+            annotation="org.Hs.eg.db", ontology="BP",
+            pvalueCutoff=0.05, testDirection="over")
+conditional(params) <- TRUE
+hgOver <- hyperGTest(params)
+hgOver
+GOresults <- summary(hgOver)
+
+GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5 & GOresults$OddsRatio != Inf, ]
+GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
+head(GOresults)
+
+GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE ), ]
+head(GOresults)
 ```
 
 
