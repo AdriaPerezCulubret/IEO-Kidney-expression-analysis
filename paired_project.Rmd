@@ -13,7 +13,7 @@ library(geneplotter)
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 ```{r}
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -417,4 +417,12 @@ res <- decideTests(fit, p.value = FDRcutoff)
 summary(res)
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 colnames(design)
+
+```
+
+### Functional Enrichment ###
+
+```{r}
+
+
 ```
