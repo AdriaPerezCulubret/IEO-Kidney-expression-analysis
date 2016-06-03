@@ -9,6 +9,7 @@ library(ggplot2)
 library(geneplotter)
 library(org.Hs.eg.db)
 library(GOstats)
+library(biomaRt)
 ```
 
 
@@ -24,7 +25,7 @@ se
 
 
 ###DGE object
-We create a DGEList' object to hold the dataset to be analysed in a better and more comprehensive way.
+We create an object to hold the dataset to be analysed in a better and more comprehensive way.
 
 
 ```{r}
@@ -407,20 +408,12 @@ summary(design)
 dgenorm
 v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
-<<<<<<< HEAD
-mod0 <- model.matrix(~ samplecodes, colData(se.paired.genes))
-=======
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
->>>>>>> 9f707b92d9d70c3ff5d6eedb6c6b5ffc2004fcbf
 sv <- sva(v$E, mod = design, mod0 = mod0)
 design.voom <- ""
 design.voom <- cbind(design, sv$sv)
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 9f707b92d9d70c3ff5d6eedb6c6b5ffc2004fcbf
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
@@ -453,16 +446,25 @@ summary(toptable)
 
 ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
 
-under_exp <- toptable[toptable$logFC <= -0.44470 ,]
-over_exp  <- toptable[toptable$logFC >= 0.35090,] 
+under_exp <- toptable[toptable$logFC <= -5 ,]
+over_exp  <- toptable[toptable$logFC >= 5,] 
+
 
 dim(under_exp)
 dim(over_exp)
 
+head(over_exp[order(over_exp$logFC, decreasing = TRUE),])
+head(under_exp[order(under_exp$logFC, decreasing = FALSE),])
+
+toptable[toptable$symbol == "PBRM1",]
+
+# PBRM1 is over y es BIEN.
 ```
 
 
-### Functional Enrichment ###
+### Functional Enrichment 
+
+#### Over represented GOs
 
 ```{r}
 
@@ -471,26 +473,61 @@ length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
             annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.05, testDirection="over")
+            pvalueCutoff=0.01, testDirection="over")
 conditional(params) <- TRUE
 hgOver <- hyperGTest(params)
 hgOver
 GOresults <- summary(hgOver)
 
 GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5 & GOresults$OddsRatio != Inf, ]
+
+
 GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
+
+GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
+
 head(GOresults)
 
-GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE ), ]
-head(GOresults)
 
 ```
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
+#### Under represented GOs
+
+
+# (...)
 
 
 
+### GET OMIM ANNOTATIONS
 ```{r}
+over_exp_omim <-  select(
+       org.Hs.eg.db,
+       keys = rownames(over_exp),
+       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
+       keytype="ENTREZID"
+)
 
+under_exp_omim <-  select(
+       org.Hs.eg.db,
+       keys = rownames(under_exp),
+       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
+       keytype="ENTREZID"
+)
+
+
+dim(over_exp)
+dim(under_exp_omim)
+
+over_exp_omim
+under_exp_omim
 ```
+
+
+
+# TO DO
+## Hier. clustering uing DE genes.
+## KEGG pathways
+## Multiple testing correction for GO and KEGG functional analysis???
+
 
