@@ -7,13 +7,15 @@ library(edgeR)
 library(sva)
 library(ggplot2)
 library(geneplotter)
+library(org.Hs.eg.db)
+library(GOstats)
 ```
 
 
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 ```{r}
-se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -405,11 +407,20 @@ summary(design)
 dgenorm
 v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
+<<<<<<< HEAD
 mod0 <- model.matrix(~ samplecodes, colData(se.paired.genes))
+=======
+mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
+>>>>>>> 9f707b92d9d70c3ff5d6eedb6c6b5ffc2004fcbf
 sv <- sva(v$E, mod = design, mod0 = mod0)
+design.voom <- ""
 design.voom <- cbind(design, sv$sv)
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9f707b92d9d70c3ff5d6eedb6c6b5ffc2004fcbf
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
@@ -431,16 +442,30 @@ abline(0,1, lwd = 2)
 
 ### REPEATED MEASUREMENTS
 ```{r}
-corfit <- duplicateCorrelation(v, design, block = )
 
-colnames(colData(se.paired.genes))
 
 ```
+
+
+### OVER vs UNDER
+```{r}
+summary(toptable)
+
+ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
+
+under_exp <- toptable[toptable$logFC <= -0.44470 ,]
+over_exp  <- toptable[toptable$logFC >= 0.35090,] 
+
+dim(under_exp)
+dim(over_exp)
+
+```
+
 
 ### Functional Enrichment ###
 
 ```{r}
-library(GOstats)
+
 DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
@@ -462,15 +487,10 @@ head(GOresults)
 ```
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
-summary(toptable)
-
-ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
 
 
-under_exp <- toptable[toptable$logFC <= -0.44470 ,]
-over_exp  <- toptable[toptable$logFC >= 0.35090,] 
 
-dim(under_exp)
-dim(over_exp)
-summary(toptable$logFC)
+```{r}
+
+```
 
