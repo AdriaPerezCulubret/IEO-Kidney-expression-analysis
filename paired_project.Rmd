@@ -405,12 +405,12 @@ summary(design)
 dgenorm
 v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
-mod0 <- model.matrix(~ 1, colData(se.paired.genes))
+mod0 <- model.matrix(~ samplecodes, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
 design.voom <- cbind(design, sv$sv)
 
 
-fit <- lmFit(v, design)
+fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
 summary(res)
@@ -458,8 +458,9 @@ head(GOresults)
 
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE ), ]
 head(GOresults)
-```
 
+```
+When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 summary(toptable)
 
