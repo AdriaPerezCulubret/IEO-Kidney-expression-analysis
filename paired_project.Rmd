@@ -10,6 +10,7 @@ library(geneplotter)
 library(org.Hs.eg.db)
 library(GOstats)
 library(biomaRt)
+library(KEGG.db)
 ```
 
 
@@ -107,8 +108,6 @@ legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
 ```
 
 
-
-
 ###Genes filtering: Distribution of expression levels
 ```{r}
 
@@ -152,7 +151,7 @@ ggplot(genemean) +
 We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used the mean as a threshold.
 ```{r}
 avgexp <- rowMeans(assays(se.paired)$logCPM)
-mask <- avgexp > mean(genemean$Means)
+mask <- avgexp > 1
 ```
 
 
@@ -423,8 +422,6 @@ colnames(design)
 
 ```
 
-
-
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
 par(mfrow=c(1,2), mar=c(4,5,2,2))
@@ -474,22 +471,17 @@ geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
             annotation="org.Hs.eg.db", ontology="BP",
             pvalueCutoff=0.01, testDirection="over")
+
 conditional(params) <- TRUE
 hgOver <- hyperGTest(params)
-hgOver
 GOresults <- summary(hgOver)
-
-GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5 & GOresults$OddsRatio != Inf, ]
-
+GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5,]
 
 GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
-
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
-
-head(GOresults)
-
-
 ```
+
+
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 #### Under represented GOs
@@ -497,6 +489,32 @@ When performing the functional enrichment analysis, some fo the gene sets have a
 
 # (...)
 
+
+#### Over represented KEGGs
+
+```{r}
+DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+            annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
+
+hgOver <- hyperGTest(params)
+
+hgOver
+KEGGresults <- summary(hgOver)
+
+# Filtering by counts and size
+KEGGresults <- KEGGresults[KEGGresults$Size >= 5 & KEGGresults$Count >= 5, ]
+
+
+KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
+KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
+
+head(KEGGresults)
+```
+
+When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 
 ### GET OMIM ANNOTATIONS
@@ -523,6 +541,52 @@ over_exp_omim
 under_exp_omim
 ```
 
+
+### HIER CLUSTERING USING DE GENES
+
+```{r}
+head(colnames(colData(se.paired.genes)))
+
+# Get a mask with DE genes to filter SE object
+DE.genes <-  rownames(se.paired.genes) %in% rownames(over_exp) | 
+             rownames(se.paired.genes) %in% rownames(under_exp)
+
+# Filter SE object using DE.genes
+se.DE  <- se.paired.genes[DE.genes,]
+dgenorm.DE <- dgenorm[DE.genes,]
+
+
+```
+
+
+
+```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.DE)$logCPMnorm, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(se.DE$type))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.DE)
+outcome <- paste(substr(colnames(se.DE), 9, 12), as.character(se.DE$type), sep="-")
+names(outcome) <- colnames(se.DE)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+                               function(x, batch, labels) {
+                                 if (is.leaf(x)) {
+                                   attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+                                   attr(x, "label") <- as.vector(labels[attr(x, "label")])
+                                 }
+                                 x
+                               }, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.DE$type))), fill=sort(unique(batch)))
+
+```
+
+```{r mdsDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+plotMDS(dgenorm.DE, labels=outcome, col=batch)
+legend("bottomleft", paste("Type", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
+       fill=sort(unique(batch)), inset=0.05)
+```
 
 
 # TO DO
