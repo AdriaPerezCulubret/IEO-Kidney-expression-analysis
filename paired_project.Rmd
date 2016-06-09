@@ -461,7 +461,7 @@ toptable[toptable$symbol == "PBRM1",]
 
 ### Functional Enrichment 
 
-#### Over represented GOs
+#### Over represented GOs (All DE)
 
 ```{r}
 
@@ -479,11 +479,60 @@ GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5,]
 
 GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
+
+htmlReport(hgOver, file = "gotests.html")
+browseURL("gotests.html")
 ```
 
 
-#### Under represented GOs
+#### GOs (Overexpressed DE)
 
+```{r}
+
+DEgenes <- rownames(over_exp)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+            annotation="org.Hs.eg.db", ontology="BP",
+            pvalueCutoff=0.01, testDirection="over")
+
+conditional(params) <- TRUE
+hgOver <- hyperGTest(params)
+GOresultsover <- summary(hgOver)
+GOresultsover <- GOresultsover[GOresultsover$Size >= 5 & GOresultsover$Count >= 5,]
+
+GOresultsover <- GOresultsover[order(GOresultsover$OddsRatio, decreasing = TRUE), ]
+GOresultsover <- GOresultsover[order(GOresultsover$Pvalue, decreasing = FALSE), ]
+
+head(GOresultsover)
+
+htmlReport(hgOver, file = "gotestsover.html")
+browseURL("gotestsover.html")
+```
+
+
+#### GOs (Underexpressed DE)
+```{r}
+
+DEgenes <- rownames(under_exp)[under_exp$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+            annotation="org.Hs.eg.db", ontology="BP",
+            pvalueCutoff=0.01, testDirection="over")
+
+conditional(params) <- TRUE
+hgUnder <- hyperGTest(params)
+GOresultsunder <- summary(hgUnder)
+GOresultsunder <- GOresultsover[GOresultsunder$Size >= 5 & GOresultsunder$Count >= 5,]
+
+GOresultsunder <- GOresultsunder[order(GOresultsunder$OddsRatio, decreasing = TRUE), ]
+GOresultsunder <- GOresultsunder[order(GOresultsunder$Pvalue, decreasing = FALSE), ]
+
+head(GOresultsover)
+
+htmlReport(hgUnder, file = "gotestsunder.html")
+browseURL("gotestsunder.html")
 
 # (...)
 
