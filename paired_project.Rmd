@@ -149,6 +149,7 @@ ggplot(genemean) +
 
 
 We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used the mean as a threshold.
+
 ```{r}
 avgexp <- rowMeans(assays(se.paired)$logCPM)
 mask <- avgexp > 1
@@ -446,6 +447,8 @@ ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0
 under_exp <- toptable[toptable$logFC <= -5 ,]
 over_exp  <- toptable[toptable$logFC >= 5,] 
 
+under_exp.all <- toptable[toptable$logFC <= 0 ,]
+over_exp.all  <- toptable[toptable$logFC >= 0,] 
 
 dim(under_exp)
 dim(over_exp)
@@ -481,7 +484,7 @@ GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 ```
 
-
+head(toptable)
 #### Under represented GOs
 
 
