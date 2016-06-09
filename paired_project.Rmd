@@ -482,8 +482,6 @@ GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 ```
 
 
-When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
-
 #### Under represented GOs
 
 
@@ -542,7 +540,10 @@ under_exp_omim
 ```
 
 
-### HIER CLUSTERING USING DE GENES
+### HIERCHICAL CLUSTERING USING D.E. GENES
+
+Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
+
 
 ```{r}
 head(colnames(colData(se.paired.genes)))
@@ -587,11 +588,4 @@ plotMDS(dgenorm.DE, labels=outcome, col=batch)
 legend("bottomleft", paste("Type", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
        fill=sort(unique(batch)), inset=0.05)
 ```
-
-
-# TO DO
-## Hier. clustering uing DE genes.
-## KEGG pathways
-## Multiple testing correction for GO and KEGG functional analysis???
-
 
