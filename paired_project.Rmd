@@ -423,6 +423,7 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 9 tumor samples cluster apart from the other samples in the hierarchical clustering, so we should consider taking apart this samples.
 
+
 ## DIFFERENTIAL EXPRESSION ANALYSIS
 
 ### MEAN-VARIANCE RELATIONSHIP
