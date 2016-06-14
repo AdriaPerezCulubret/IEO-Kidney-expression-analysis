@@ -68,8 +68,8 @@ Parlar de lo desconegut i putes que es aquest cancer i tambe parlar de la import
 
 \section*{Materials and Methods}
 
-\subsection*{Sample filtering}
-The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas \href{<http://cancergenome.nih.gov>}{TGCA}. The data initially comprised 542 tumours and 72 normal samples. Each one of the samples have a total of 20115 genes. We have applied several filters to reduce the data samples:
+\subsection*{Data and sample filtering}
+The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas \href{http://www.cancergenome.nih.gov}{TCGA}. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. Each one of the samples have a total of 20115 genes. We have applied several filters to reduce the data samples:
 \begin{itemize}
 \item \textit{ Library size filtering:} In order to obtain a more reliable data, we need to filter out the samples with a low sequencing depth (< 45 Millions per read). We obtain a filtered data of: 298 tumor and 48 normal samples.
 \item \textit{Paired data filtering:} The next step is pairing the normal and tumor data. It allows the reduction of our set and to obtain a more accurate information. This filter results in 38 normal and 38 tumor samples.
@@ -80,11 +80,23 @@ We also need to apply filters to reduce the gene sets:
 Manuscripts submitted to GENETICS should contain a clear de- scription of the experimental design in sufficient detail so that the experimental analysis could be repeated by another scientist
 \end{itemize}
 
-\subsection*{Statistical and Data Analysis } 
-Analyses has been performed with R. See more information about that in: \url{www.r-project.org}. All packages used in this Project could be viewed on the DONDEEEEEEEEEE.
+\subsection*{Statistics and Data Analysis } 
+All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}.
+\subsubsection*{Differential expression analysis:}
+ EdgeR package from Bioconductor software has been used for the differentially expressed gene identification analyse. To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient. TEST UTILITZAT, P-VALUES USATS, ADJUSTED.
+ 
+ We apply two different filters. For one hand a p-value threshold  
+ FILTRES: p-value, foldChange.
+ palicant filtre p-value obtenim 3 tipus: over,under all.
+ filtre foldChange: strongly over-express, strongly under-express.
+
+A Gene Ontology analysis (GO), was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms (P< 0.01).  Three Enrichment Tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO results are available in the supporting materials together with the raw p-values.
+
+All packages used in this project could be viewed on the supplementary section of our project.
 
 
-It is important to indicate what statistical analysis has been performed; not just the name of the software and options selected, but the method and model applied. In the case of many genes being examined simultaneously, or many phenotypes, a multiple comparison correction should be used to control the type I error rate, or a rationale for not applying a correction must be provided. The type of correction applied should be clearly stated. It should also be clear whether the p-values reported are raw, or after correction. Corrected p-values are often appropriate, but raw p-values should be available in the supporting materials so that others may perform their own corrections. In large scale data exploration studies (e.g. genome wide expression studies) a clear and complete description of the replication structure must be provided. 
+
+
 
 \subsection*{Data Availability}
 
