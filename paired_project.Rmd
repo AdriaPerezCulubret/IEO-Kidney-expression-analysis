@@ -138,8 +138,9 @@ multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM",
 
 ####Distribution of expression levels among genes
 Now, we want to filter out the genes with a low expression. To do that, we can plot the CPMs in logarithmic scale.
+
 ```{r}
-genemean <- data.frame(Means=rowMeans(assays(se.paired)$logCPM[,-1]))
+genemean <- data.frame(Means=aveLogCPM(assays(se.paired)$counts))
 
 ggplot(genemean) +
   geom_bar(aes(x=Means), binwidth = 1, fill="white", color="black") +
@@ -147,11 +148,10 @@ ggplot(genemean) +
   geom_vline(xintercept=mean(genemean$Means), color="red")
 ```
 
-
-We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used the mean as a threshold.
+We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used a minimum average of 1 LogCPM unit as a cutoff to filter out lowly expressed genes.
 
 ```{r}
-avgexp <- rowMeans(assays(se.paired)$logCPM)
+avgexp <- aveLogCPM(assays(se.paired)$counts)
 mask <- avgexp > 1
 ```
 
@@ -201,9 +201,19 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
 
-As we can see, we don't see any samples with major biases in gene expression.
+```{r}
 
+dim(se.paired.genes) # Before filtering SE
+dim(dge.filt) # Before filtering DGE
+
+se.paired.genes <- se.paired.genes[,!se.paired.genes$bcr_patient_barcode %in% "TCGA-CW-5591"]
+dim(se.paired.genes) # After filtering SE
+
+dge.filt <- dge.filt[, !substr(rownames(dge.filt$samples), 1, 12) %in% "TCGA.CW.5591"]
+dim(dge.filt) # After filtering DGE
+```
 Now, we examine the tumor samples:
 
 ```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
@@ -221,6 +231,7 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+As we can see, we don’t see any tumor samples with major biases in gene expression
 
 <br/>   
 
