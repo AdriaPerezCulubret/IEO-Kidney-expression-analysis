@@ -41,7 +41,7 @@ library(edgeR)
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 ```{r}
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
 se
 ```
