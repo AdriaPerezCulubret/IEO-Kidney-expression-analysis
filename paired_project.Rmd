@@ -453,6 +453,8 @@ The Hierarchical clustering and the Multidimensional Scaling plots show a clear 
 
 ## DIFFERENTIAL EXPRESSION ANALYSIS
 
+In order to identify differentially expressed genes, we used a linear model with two factors: one being the type of the sample (tumor or normal) and the other being the individual/sample.
+
 ###Mean variance relationship
 ```{r}
 
@@ -569,7 +571,7 @@ length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
             annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
+            pvalueCutoff=0.01, testDirection="under")
 
 conditional(params) <- TRUE
 hgUnder <- hyperGTest(params)
