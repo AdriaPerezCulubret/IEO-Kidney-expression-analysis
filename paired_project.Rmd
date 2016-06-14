@@ -10,26 +10,26 @@
 	- [Explore phenotypic data](#exploring-phenotypic-data)
 	- [Explore feature data](#exploring-feature-data)
 	- [DGE object](#dge-object)
-- [QUALITY & NORMALIZATION](#quality-&-normalization)
+- [QUALITY AND NORMALIZATION](#quality-and-normalization)
 	- [Library size filtering](#library-size-filtering)
 	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
     - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
     - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
-  - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+    - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
 	- [MA-plots](#ma-plots)
 	- [Batch identification](#batch-identification)
-    - [GENDER batch effect](#gender-batch-effect)
+      - [GENDER batch effect](#gender-batch-effect)
     - [TSS batch effect](#tss-batch-effect)
     - [PLATE batch effect](#plate-batch-effect)
     - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
 - [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
-  - [Mean Variance relationship](#MEAN-VARIANCE RELATIONSHIP)
-  - [Surrogate variable analysis](#surrogate-variable-analysis)
-  - [Over vs UNDER](#over-vs-under)
-  - [Functional Enrichment](#Functional-enrichment)
-    - [Over represented GOs](#Over-represented-GOs)
-    -
-- [CONCLUSIONS](#conclusions)
+  - [Mean Variance relationship](#mean-variance-relationship)
+  - [Over vs Under](#over-vs-under)
+  - [Functional Enrichment](#functional-enrichment)
+    - [Over represented GOs](#over-represented-gos)
+    - [Over represented KEGGs](#over-represented-keggs)
+- [HIERACHLICAL CLUSTERING USING DE GENES](#Hiercarchical-clustering-using-DE-genes)
+- [SESSION INFORMATION](#session-information)
 
 ##LOADING DATA
 
@@ -49,7 +49,7 @@ library(KEGG.db)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/Documents/Github/IEO-Kidney-expression-analysis/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -95,7 +95,7 @@ assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
 
-##QUALITY & NORMALIZATION
+##QUALITY AND NORMALIZATION
 
 ###Library size filtering
 
@@ -432,12 +432,11 @@ The Hierarchical clustering and the Multidimensional Scaling plots show a clear 
 
 ## DIFFERENTIAL EXPRESSION ANALYSIS
 
-### MEAN VARIANCE RELATIONSHIP
+###Mean variance relationship
 ```{r}
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
-summary(design)
-dgenorm
+
 v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
@@ -449,7 +448,7 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
-summary(res)
+
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 colnames(design)
 
@@ -463,7 +462,7 @@ qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main="", pch = ".", cex=3, yli
 abline(0,1, lwd = 2)
 ```
 
-### OVER vs UNDER
+###Over vs under
 ```{r}
 summary(toptable)
 
@@ -486,9 +485,9 @@ toptable[toptable$symbol == "PBRM1",]
 # PBRM1 is over y es BIEN.
 ```
 
-### Functional Enrichment 
+###Functional enrichment 
 
-#### Over represented GOs
+####Over represented GOs
 
 ```{r}
 
@@ -510,9 +509,7 @@ GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 
 head(toptable)
 
-#### Under represented GOs
 
-# (...)
 
 #### Over represented KEGGs
 
@@ -541,31 +538,8 @@ head(KEGGresults)
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 
-### GET OMIM ANNOTATIONS
-```{r}
-over_exp_omim <-  select(
-       org.Hs.eg.db,
-       keys = rownames(over_exp),
-       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
-       keytype="ENTREZID"
-)
 
-under_exp_omim <-  select(
-       org.Hs.eg.db,
-       keys = rownames(under_exp),
-       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
-       keytype="ENTREZID"
-)
-
-
-dim(over_exp)
-dim(under_exp_omim)
-
-over_exp_omim
-under_exp_omim
-```
-
-### HIERCHICAL CLUSTERING USING D.E. GENES
+## HIERCHICAL CLUSTERING USING D.E. GENES
 
 Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
 
@@ -612,7 +586,7 @@ legend("bottomleft", paste("Type", sort(unique(batch)), levels(factor(se.paired.
        fill=sort(unique(batch)), inset=0.05)
 ```
 
-##Session information
+##SESSION INFORMATION
 
 ```{r sessionInfo}
 sessionInfo()
