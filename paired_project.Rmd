@@ -13,8 +13,8 @@
 - [QUALITY & NORMALIZATION](#quality-&-normalization)
 	- [Library size filtering](#library-size-filtering)
 	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
-    - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
-    - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+  - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
+  - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
   - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
 	- [MA-plots](#ma-plots)
 	- [Batch identification](#batch-identification)
@@ -183,7 +183,6 @@ multidensity(as.list(as.data.frame(assays(se.paired)$logCPM)), xlab = "log2 CPM"
 We cannot observe significant diferences between samples in terms of expression levels.
 
 As we have more than 200 samples, we now display the normal and tumor distribution separately.
-
 
 ####Expression levels comparison between normal and tumor
 
