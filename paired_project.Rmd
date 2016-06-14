@@ -1,3 +1,36 @@
+#KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
+
+##### Andreu Bofill Pumarla (andreu.bofill01@estudiant.upf.edu)
+##### Sergio Castillo Lara (sergio.castillo01@estudiant.upf.edu)
+##### Adrià Pérez Culubret (adria.perez06@estudiant.upf.edu)
+
+## Table of Contents
+
+- [LOADING DATA](#loading-data)
+	- [Explore phenotypic data](#exploring-phenotypic-data)
+	- [Explore feature data](#exploring-feature-data)
+	- [DGE object](#dge-object)
+- [QUALITY AND NORMALIZATION](#quality-and-normalization)
+	- [Library size filtering](#library-size-filtering)
+	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
+    - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
+    - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+    - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+	- [MA-plots](#ma-plots)
+	- [Batch identification](#batch-identification)
+      - [GENDER batch effect](#gender-batch-effect)
+    - [TSS batch effect](#tss-batch-effect)
+    - [PLATE batch effect](#plate-batch-effect)
+    - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
+- [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
+  - [Mean Variance relationship](#mean-variance-relationship)
+  - [Over vs Under](#over-vs-under)
+  - [Functional Enrichment](#functional-enrichment)
+    - [Over represented GOs](#over-represented-gos)
+    - [Over represented KEGGs](#over-represented-keggs)
+- [HIERACHLICAL CLUSTERING USING DE GENES](#Hiercarchical-clustering-using-DE-genes)
+- [SESSION INFORMATION](#session-information)
+
 ##LOADING DATA
 
 ```{r}
@@ -13,26 +46,48 @@ library(biomaRt)
 library(KEGG.db)
 ```
 
-
-
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
+
 ```{r}
 se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
 
-#QUALITY & NORMALIZATION
+###Exploring phenotypic data
 
+We take a look to the column data, which include the phenotipic information of all samples of the sumarized experiment object.
+
+```{r}
+dim(colData(se))
+colData(se)[1:5, 1:5]
+```
+
+We also need to observe to the metadata information content of these data.
+
+```{r}
+mcols(colData(se), use.names=TRUE)
+```
+
+As we can see there are three different columns on the metadata result. The first column is the name of all the variables; the second is the labelDescription, which is the definition of each variable; and the last one corresponding to the Common Data Element Identifier (CDEID).
+
+###Exploring feature data
+
+We look through the data rows, which are the feature elements, to see the genes information of our data set.
+
+```{r}
+rowRanges(se)
+```
 
 ###DGE object
-We create an object to hold the dataset to be analysed in a better and more comprehensive way.
 
+We create an object to hold the dataset to be analysed in a better and more comprehensive way.
 
 ```{r}
 library(edgeR)
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 ```
+
 Moreover, we calculate $\log_2$ CPM values of expression and we save them in an assay element.
 
 ```{r}
@@ -40,11 +95,11 @@ assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
 
-##Library size filtering
+##QUALITY AND NORMALIZATION
+
+###Library size filtering
 
 At this point, we need to determine if the library sizes of tumor samples and normal samples are similar or not.
-
-
 
 ```{r}
 libsize <- data.frame(libsize = dge$sample$lib.size/1e6, type = se$type)
@@ -58,6 +113,7 @@ ggplot(libsize) +
   theme_bw()
 ```
 
+This past figure shows the density distribution on sequencing depth (milions of reads).
 
 ```{r}
 ggplot(libsize) +
@@ -66,6 +122,13 @@ ggplot(libsize) +
   ) + xlab("\nMillions of Reads") + ylab("% of Samples\n") + theme_bw()
 ```
 
+In this other figure, we can see now the proportion of samples in each sequencing depth (Milions of Reads).
+
+As we can see, both figures show that the normal and tumor samples are similar in terms of sequencing depth, except for some samples that show extreme values.
+
+Moreover, we can see how both normal and tumor types, follow a normal distribution through the sequencing depth.
+
+At this point, we can filter out those samples with a low sequencing depth (<45 Milions of reads) because they are less reliable. 
 
 ```{r}
 dge.filt <- dge[, dge$sample$lib.size/1e6 > 45 ]
@@ -74,8 +137,6 @@ final.samples <- rownames(dge.filt$samples)
 
 se.filt <-se[,colnames(se) %in% final.samples]
 ```
-
-
 
 ```{r}
 se.normal <- se.filt[,se.filt$type == "normal"]
@@ -99,14 +160,12 @@ dge.filt <- DGEList(counts=assays(se.paired)$counts, genes=mcols(se.paired))
 dge.filt
 ```
 
-
 ```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
 ord <- order(dge.filt$sample$lib.size/1e6)
 barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
         xlab="Samples", col=c("blue", "red")[(se.paired$type[ord] == "tumor") + 1])
 legend("topleft", c("tumor", "normal"), fill=c("red", "blue"), inset=0.01)
 ```
-
 
 ###Genes filtering: Distribution of expression levels
 ```{r}
@@ -121,12 +180,13 @@ In the next part, we take a look on the distribution of expression values per sa
 multidensity(as.list(as.data.frame(assays(se.paired)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
-
 We cannot observe significant diferences between samples in terms of expression levels.
 
 As we have more than 200 samples, we now display the normal and tumor distribution separately.
 
+
 ####Expression levels comparison between normal and tumor
+
 ```{r}
 normalCPM <- se.paired[,se.paired$type == "normal"]
 tumorCPM <- se.paired[,se.paired$type == "tumor"]
@@ -134,9 +194,8 @@ multidensity(as.list(as.data.frame(assays(normalCPM)$logCPM)), xlab = "log2 CPM"
 multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
-
-
 ####Distribution of expression levels among genes
+
 Now, we want to filter out the genes with a low expression. To do that, we can plot the CPMs in logarithmic scale.
 
 ```{r}
@@ -155,15 +214,15 @@ avgexp <- aveLogCPM(assays(se.paired)$counts)
 mask <- avgexp > 1
 ```
 
-
 These are the numbers of genes before filtering:
+
 ```{r}
 dim(se.paired) # Before filtering SE
 dim(dge.filt) # Before filtering DGE
 ```
 
-
 These are the numbers of samples genes after filtering:
+
 ```{r}
 se.paired.genes <- se.paired[mask, ]
 dim(se.paired.genes) # After filtering SE
@@ -173,18 +232,16 @@ dim(dge.filt) # After filtering DGE
 
 ```
 
-
 At this point, we can calculate the normaliation factors on the filtered expression data set.
+
 ```{r}
 dgenorm <- calcNormFactors(dge.filt)
 assays(se.paired.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 ```
 
-
 ###MA-plots
 
 We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
-
 
 ```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
 par(mfrow=c(9, 4 ), mar=c(4, 4, 3, 1))
@@ -201,6 +258,7 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+
 After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
 
 ```{r}
@@ -216,6 +274,7 @@ dim(dge.filt) # After filtering DGE
 ```
 Now, we examine the tumor samples:
 
+
 ```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
 par(mfrow=c(36, 4 ), mar=c(2, 2, 1, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
@@ -230,6 +289,7 @@ for (i in 1:ncol(setmp)) {
   lines(lo$x, lo$y, col="red", lwd=2)
 }
 ```
+
 
 As we can see, we don’t see any tumor samples with major biases in gene expression
 
@@ -254,9 +314,6 @@ table(samplevial)
 
 
 ```
-
-<br/>  
-
 
 ####GENDER batch effect
 
@@ -286,15 +343,11 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TSS", sort(unique(batch)), levels(factor(se.paired.genes$gender))), fill=sort(unique(batch)))
 
 ```
-
 ```{r mdsGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
        fill=sort(unique(batch)), inset=0.05)
 ```
-
-
-
 
 ####TSS batch effect
 
@@ -322,18 +375,11 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TSS", sort(unique(batch)), levels(factor(tss))), fill=sort(unique(batch)))
 
 ```
-
-
-
 ```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
 ```
-
-<br/>  
-
-
 
 ####PLATE batch effect
 
@@ -362,15 +408,11 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("PLATE", sort(unique(batch)), levels(factor(plate))), fill=sort(unique(batch)))
 
 ```
-
 ```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
 ```
-
-<br/>  
-
 
 ####PORTION-ANALYTE batch effect
 
@@ -398,7 +440,6 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))), fill=sort(unique(batch)))
 
 ```
-
 ```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))),
@@ -406,17 +447,16 @@ legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(
 
 ```
 
+The Hierarchical clustering and the Multidimensional Scaling plots show a clear differentiation between normal samples and tumor samples. All four plots from the different elements of the barcode have a similar clustering and distribution. There is no clear effect from the batch indicators in the clustering, and it seems to have a balanced design (more clearly in tumor than in normal), although it seems that 9 tumor samples cluster apart from the other samples in the hierarchical clustering, so we should consider taking apart this samples.
+
 
 ## DIFFERENTIAL EXPRESSION ANALYSIS
 
-
-
-### MEAN-VARIANCE RELATIONSHIP
+###Mean variance relationship
 ```{r}
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
-summary(design)
-dgenorm
+
 v <- voom(dgenorm, design, plot=FALSE)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
@@ -428,7 +468,7 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
-summary(res)
+
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 colnames(design)
 
@@ -442,14 +482,7 @@ qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main="", pch = ".", cex=3, yli
 abline(0,1, lwd = 2)
 ```
 
-### REPEATED MEASUREMENTS
-```{r}
-
-
-```
-
-
-### OVER vs UNDER
+###Over vs under
 ```{r}
 summary(toptable)
 
@@ -472,10 +505,10 @@ toptable[toptable$symbol == "PBRM1",]
 # PBRM1 is over y es BIEN.
 ```
 
+###Functional enrichment 
 
-### Functional Enrichment 
 
-#### Over represented GOs (All DE)
+####Over represented GOs
 
 ```{r}
 
@@ -497,6 +530,7 @@ GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 htmlReport(hgOver, file = "gotests.html")
 browseURL("gotests.html")
 ```
+
 
 
 #### GOs (Overexpressed DE)
@@ -549,8 +583,6 @@ head(GOresultsover)
 htmlReport(hgUnder, file = "gotestsunder.html")
 browseURL("gotestsunder.html")
 
-# (...)
-
 
 #### Over represented KEGGs
 
@@ -579,35 +611,10 @@ head(KEGGresults)
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 
-### GET OMIM ANNOTATIONS
-```{r}
-over_exp_omim <-  select(
-       org.Hs.eg.db,
-       keys = rownames(over_exp),
-       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
-       keytype="ENTREZID"
-)
 
-under_exp_omim <-  select(
-       org.Hs.eg.db,
-       keys = rownames(under_exp),
-       columns=c("ENTREZID","SYMBOL","GENENAME", "OMIM"),
-       keytype="ENTREZID"
-)
-
-
-dim(over_exp)
-dim(under_exp_omim)
-
-over_exp_omim
-under_exp_omim
-```
-
-
-### HIERCHICAL CLUSTERING USING D.E. GENES
+## HIERCHICAL CLUSTERING USING D.E. GENES
 
 Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
-
 
 ```{r}
 head(colnames(colData(se.paired.genes)))
@@ -622,7 +629,6 @@ dgenorm.DE <- dgenorm[DE.genes,]
 
 
 ```
-
 
 
 ```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
@@ -653,3 +659,8 @@ legend("bottomleft", paste("Type", sort(unique(batch)), levels(factor(se.paired.
        fill=sort(unique(batch)), inset=0.05)
 ```
 
+##SESSION INFORMATION
+
+```{r sessionInfo}
+sessionInfo()
+```
