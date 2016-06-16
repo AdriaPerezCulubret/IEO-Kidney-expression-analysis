@@ -572,7 +572,6 @@ dim(dgenorm.gsea)
 gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
 dim(gsmatrix)
 
-## herp derp
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
 
@@ -586,8 +585,6 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 toptable.gsea <- topTable(fit, coef = 2, n=Inf)
-
-## wubba lubba dup dup
 
 
 tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
