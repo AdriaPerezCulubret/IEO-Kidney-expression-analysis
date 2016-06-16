@@ -1,6 +1,6 @@
 #KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
-##### Andreu Bofill Pumarla (andreu.bofill01@estudiant.upf.edu)
+##### Andreu Bofill Pumarola (andreu.bofill01@estudiant.upf.edu)
 ##### Sergio Castillo Lara (sergio.castillo01@estudiant.upf.edu)
 ##### Adrià Pérez Culubret (adria.perez06@estudiant.upf.edu)
 
@@ -44,6 +44,8 @@ library(org.Hs.eg.db)
 library(GOstats)
 library(biomaRt)
 library(KEGG.db)
+library(GSEABase)
+library(GSVAdata)
 ```
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
@@ -271,6 +273,9 @@ dim(se.paired.genes) # After filtering SE
 
 dge.filt <- dge.filt[, !substr(rownames(dge.filt$samples), 1, 12) %in% "TCGA.CW.5591"]
 dim(dge.filt) # After filtering DGE
+
+dgenorm <- dgenorm[, !substr(rownames(dgenorm$samples), 1, 12) %in% "TCGA.CW.5591"]
+dim(dgenorm) # After filtering DGE
 ```
 Now, we examine the tumor samples:
 
@@ -453,12 +458,13 @@ The Hierarchical clustering and the Multidimensional Scaling plots show a clear 
 ```{r}
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
-
 v <- voom(dgenorm, design, plot=FALSE)
+dim(se.paired.genes)
+dim(dgenorm)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
-design.voom <- "" ?????????
+design.voom <- ""
 design.voom <- cbind(design, sv$sv)
 
 
@@ -512,7 +518,6 @@ toptable[toptable$symbol == "VHL1",]
 
 ###Functional enrichment 
 
-
 ####Over represented GOs
 
 ```{r}
@@ -521,7 +526,7 @@ DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BPi",
+            annotation="org.Hs.eg.db", ontology="BP",
             pvalueCutoff=0.01, testDirection="over")
 
 conditional(params) <- TRUE
@@ -535,8 +540,6 @@ GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 htmlReport(hgOver, file = "gotests.html")
 browseURL("gotests.html")
 ```
-
-
 
 #### GOs (Overexpressed DE)
 
@@ -562,7 +565,6 @@ head(GOresultsover)
 htmlReport(hgOver, file = "gotestsover.html")
 browseURL("gotestsover.html")
 ```
-
 
 #### GOs (Underexpressed DE)
 ```{r}
@@ -618,10 +620,6 @@ When performing the functional enrichment analysis, some fo the gene sets have a
 ### GENE SET EXPRESION ANALYSIS
 
 ```{r}
-### biocLite('GSEABase')
-### biocLite('GSVAdata')
-library(GSEABase)
-library(GSVAdata)
 data(c2BroadSets)
 
 # Filtering to only KEGG, Reactome and BioCarta
@@ -714,7 +712,6 @@ dgenorm.DE <- dgenorm[DE.genes,]
 
 
 ```
-
 
 ```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
