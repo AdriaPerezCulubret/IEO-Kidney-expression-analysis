@@ -53,9 +53,14 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
+
 se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
+
 se
+
+table(data.frame(TYPE=se$type, GENDER=se$gender))
+
 ```
 
 ###Exploring phenotypic data
@@ -214,7 +219,7 @@ genemean <- data.frame(Means=aveLogCPM(assays(se.paired)$counts))
 ggplot(genemean) +
   geom_bar(aes(x=Means), binwidth = 1, fill="white", color="black") +
   theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
-  geom_vline(xintercept=mean(genemean$Means), color="red")
+  geom_vline(xintercept=1, color="red")
 ```
 
 We can see how there are two peaks of genes. The first one correspond to these genes with a very low expression and thus we decide to remove them. In other to do that, we used a minimum average of 1 LogCPM unit as a cutoff to filter out lowly expressed genes.
@@ -463,7 +468,8 @@ The Hierarchical clustering and the Multidimensional Scaling plots show a clear 
 
 In order to identify differentially expressed genes, we used a linear model with two factors: one being the cell type (tumor or normal) and the other being the individual/sample.
 
-We chose a False Discovery Rate of 0.01 (1%). We corrected#### Over represented KEGGs
+We chose a False Discovery Rate of 0.01 (1%). In order to asses the DE genes, we applied a Surrogate Variable Analysis (sva) and we corrected the possible biases of the data estimating the mean-variance relationship using the voom function. The p-values were adjusted using the FDR.
+
 
 ###Mean variance relationship
 ```{r}
@@ -490,12 +496,18 @@ res <- decideTests(fit, p.value = FDRcutoff)
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 ```
 
-```
+
+
 colnames(design)
 ```
 
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
+```
+
+```{r volcano2, echo=FALSE, out.width="600px", fig.cap="Figure S18b: Volcano plot of DE analysis with P-value."}
+ggplot(toptable) + geom_point(aes(x=-log10(logFC), y=-log10(adj.P.Value)), color="red") + theme_bw()
+
 ```
 
 
@@ -506,7 +518,13 @@ qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main="", pch = ".", cex=3, yli
 abline(0,1, lwd = 2)
 ```
 
+As we can see in these two previous plots, we obtained many genes that are considered to be differentially expressed between tumor and normal samples (using an FDR of 0.01).
+
 ###Over vs under
+
+We ploted the Fold Change distribution in order to asses if this variable could be used in order to further reduce the number of differentially expressed genes. This could potentially give us a narrower list of genes that may be related to the development of the Kidney clear cell carcinoma.
+
+
 ```{r}
 summary(toptable)
 ```
@@ -514,6 +532,12 @@ summary(toptable)
 ```{r logfcdist, echo=FALSE, out.width="600px", fig.cap="Figure S20: Plot of logFC distribution."}
 ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
 ```
+
+```{r}
+ks.test(x=toptable$logFC,y='pnorm',alternative='two.sided')
+```
+
+We decided to use a Fold Change threshold of +5 and -5, to reduce the list of DE genes to only a handful of genes. This list is stored in the variables (under_exp and over_exp). We also divided the list of genes in two groups: those with a positive fold change and those with a negative one. This list will be used for the Functional enrichment analysis.
 
 ```{r}
 under_exp <- toptable[toptable$logFC <= -5 ,]
@@ -544,6 +568,8 @@ toptable[toptable$symbol == "VHL1",]
 
 ### Gene set expression analysis
 
+We performed a Gene set expression analysis. We used the data set called c2BroadSets from the GSVAdata, to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BIOCARTA.
+
 ```{r}
 
 data(c2BroadSets)
@@ -556,6 +582,11 @@ gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(metadata(se.paired.genes)$anno
 gsmatrix <- incidence(gsc)
 dim(gsmatrix)
 
+```
+
+We remove the genes from the gene sets that are not present in our data, and we also discard the genes in our data that are not present in the gene sets. 
+
+```{r}
 # Discard genes not in our data and genes not in the gene sets
 
 gsmatrix <- gsmatrix[, colnames(gsmatrix) %in% rownames(se.paired.genes)]
@@ -567,11 +598,13 @@ dim(se.paired.gsea)
 dgenorm.gsea <- dgenorm[colnames(gsmatrix), ]
 dim(dgenorm)
 dim(dgenorm.gsea)
+```
 
-## Filtering gene sets with a minimum size of 5
+We removed the sets with a size inferior to 5.
+
+```{r}
 gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
 dim(gsmatrix)
-
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
 
@@ -585,7 +618,6 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 toptable.gsea <- topTable(fit, coef = 2, n=Inf)
-
 
 tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
 length(tGSgenes)
@@ -609,17 +641,17 @@ plotGS <- function(se, gs, pheno, ...) {
     l <- levels(colData(se)[, pheno])
     idxSamples1 <- colData(se)[, pheno] == l[1]
     idxSamples2 <- colData(se)[, pheno] == l[2]
-    exps1 <- rowMeans(assays(se)$logCPM[gs, idxSamples1])
-    exps2 <- rowMeans(assays(se)$logCPM[gs, idxSamples2])
+    exps1 <- rowMeans(assays(se)$logCPMnorm[gs, idxSamples1])
+    exps2 <- rowMeans(assays(se)$logCPMnorm[gs, idxSamples2])
     rng <- range(c(exps1, exps2))
     plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
         xlab = l[1], ylab = l[2], ...)
     abline(a = 0, b = 1, lwd = 2, col = "red")
 }
 
-
 ```
 
+We ploted the logCPMs of tumor and normal samples for the first 27 gene sets sorted by z-score.
 
 ```{r scatter, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S22: Scatter plots of gene sets sorted by z-score. "}
 par(mfrow = c(9, 3), mar = c(4, 6, 3, 1))
@@ -632,6 +664,8 @@ for (i in 1:27){
 ```
 
 ###Functional enrichment 
+
+We performed a functional enrichment analysis using Biological Process Gene Ontology terms. We performed a Fisher's Exact Test. We applied this methodology on three gene sets: one with all the differentially expressed genes (using an adjusted P-value of 0.01), another one with only over-expressed genes and finally one with only under-expressed genes (both using an adj. P-value threshold of 0.01).
 
 ####Over represented GOs
 
@@ -731,8 +765,7 @@ When performing the functional enrichment analysis, some fo the gene sets have a
 
 ## HIERARCHICAL CLUSTERING USING DE GENES
 
-
-Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
+Then, we performed a Hierarchical clustering on the set of paired samples used for the analysis and all the available samples, but only the 77 D.E. genes in both cases. This should give us a picture of how good these genes are for separating tumor and normal samples.
 
 ```{r}
 head(colnames(colData(se.paired.genes)))
