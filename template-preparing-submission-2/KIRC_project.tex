@@ -88,7 +88,7 @@ After fitting the data to the linear model, we applied the 	empirical Bayes appr
 : A Gene Ontology analysis (GO) was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms (P< 0.01). Three enrichment tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO results are available in the supporting materials together with the raw p-values.
 
 \subsubsection*{Hierarchical Clustering using strongly DE Genes}
-: We use the strongly over-expressed genes and under-expressed genes, a total of 77 genes, to determine if these genes alone are able to separate our samples in two clusters using a Hierarchical Clustering approach (CITA SPEARRMAAAN). This approach has been applied over the 38 paired samples and also over the whole set of samples (614 samples).
+: We use the strongly over-expressed genes and under-expressed genes, a total of 199 genes, to determine if these genes alone are able to separate our samples in two clusters using a Hierarchical Clustering approach (CITA SPEARRMAAAN). This approach has been applied over the 38 paired samples and also over the whole set of samples (614 samples).
 
 \subsection*{Data Availability}
 
@@ -98,9 +98,32 @@ For example: Strains are available upon request. File S1 contains detailed descr
 
 
 \section*{Results and Discussion}
+\subsection*{Differentially Expressed Analysis}
+The DE analysis shows 9,108 differentially expressed genes in KIRC tumour, being 4,014 under-expressed and 5,094 over-expressed. Out of these DE genes, 46 were classified as strongly over-expressed and 153 as strongly under-expressed. The volcano plot represented in Fig. 1 shows the different filters applied to the whole set of genes.
 
-The results and discussion should not be repetitive. The results section should give a factual presentation of the data and all tables and figures should be referenced; the discussion should not summarize the results but provide an interpretation of the results, and should clearly delineate between the findings of the particular study and the possible impact of those findings in a larger context. Authors are encouraged to cite recent work relevant to their interpretations. Present and discuss results only once, not in both the Results and Discussion sections. It is sometimes acceptable to combine results and discussion. The text should be as succinct as possible. Heed Strunk and White's dictum: "Omit needless words!"
-\newpage
+Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-supressor genes as they promote a correct chromatin remodelling and DNA repair [cit 2 articles de renal cancer]. While PI3K/AKT pathway has been targeted as strong therapeutical target (cit 1 kric), we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig1_volcano.png}
+\caption{Example figure from \url{10.1534/genetics.114.173807}. 
+}%
+\label{fig:spectrum}
+\end{figure}
+
+\subsection*{Hierarchical clustering}
+With a Hierarchical clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 2A). These results show that these 199 strongly DE genes could be used for building a classification method based on machine learning approach (CTAAA). 
+
+The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. Some of these samples are separated from the huge tumour cluster, while a handful of them are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
+
+
+taula amb x mes sobreexpressed, logFC...
+
+3 o 4 genes
+GSA: suppl material, els més rellevants...
+	Canvi de bias metabolisme: clear cells: s'acumula lipids, son així de clares. Es frena metabolisme (degradació), disminuexi respiració oxidativa, immunnodeficiència, pd1 traget, 
+
+Functional enrichment: cell division, immuno,
 
 \section*{Additional guidelines}
 
@@ -139,14 +162,7 @@ Figures and Tables should be labelled and referenced in the standard way using t
 
 Figure \ref{fig:spectrum} shows an example figure.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{example-figure.png}
-\caption{Example figure from \url{10.1534/genetics.114.173807}. Please include your figures in the manuscript for the review process. You can upload figures to Overleaf via the Project menu. Upon acceptance, we'll ask for your figure files to be uploaded in any of the following formats: TIFF (.tiff), JPEG (.jpg), Microsoft PowerPoint (.ppt), EPS (.eps), or Adobe Illustrator (.ai).  Images should be a minimum of 300 dpi in resolution and 500 dpi minimum if line art images.  RGB, CMYK, and Grayscale are all acceptable. Halftones should be high contrast with sharp detail, because some loss of detail and contrast is inevitable in the production process. Figures should be 10-20 cm in width and 1-25 cm in height. Graph axes must be exactly perpendicular and all lines of equal density.
-Label multiple figure parts with A, B, etc. in bolded type, and use Arrows and numbers to draw attention to areas you want to highlight. Legends should start with a brief title and should be a self-contained description of the content of the figure that provides enough detail to fully understand the data presented. All conventional symbols used to indicate figure data points are available for typesetting; unconventional symbols should not be used. Italicize all mathematical variables (both in the figure legend and figure) , genotypes, and additional symbols that are normally italicized.  
-}%
-\label{fig:spectrum}
-\end{figure}
+
 
 \begin{figure}[htbp]
 \centering
