@@ -13,22 +13,23 @@
 - [QUALITY AND NORMALIZATION](#quality-and-normalization)
 	- [Library size filtering](#library-size-filtering)
 	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
-    - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
-    - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
-    - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+      - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
+      - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+      - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
 	- [MA-plots](#ma-plots)
 	- [Batch identification](#batch-identification)
       - [GENDER batch effect](#gender-batch-effect)
-    - [TSS batch effect](#tss-batch-effect)
-    - [PLATE batch effect](#plate-batch-effect)
-    - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
+      - [TSS batch effect](#tss-batch-effect)
+      - [PLATE batch effect](#plate-batch-effect)
+      - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
 - [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
   - [Mean Variance relationship](#mean-variance-relationship)
   - [Over vs Under](#over-vs-under)
+  - [Gene set expression analysis](#gene-set-expression-analysis)
   - [Functional Enrichment](#functional-enrichment)
     - [Over represented GOs](#over-represented-gos)
     - [Over represented KEGGs](#over-represented-keggs)
-- [HIERACHLICAL CLUSTERING USING DE GENES](#Hiercarchical-clustering-using-DE-genes)
+- [HIERACHLICAL CLUSTERING USING DE GENES](#hiercarchical-clustering-using-de-genes)
 - [SESSION INFORMATION](#session-information)
 
 ##LOADING DATA
@@ -515,6 +516,85 @@ toptable[toptable$symbol == "VHL1",]
 # PBRM1 i SETD2 is over y es BIEN.
 ```
 
+### Gene set expression analysis
+
+```{r}
+
+data(c2BroadSets)
+
+# Filtering to only KEGG, Reactome and BioCarta
+gsc <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
+               grep("^REACTOME", names(c2BroadSets)), grep("^BIOCARTA", names(c2BroadSets)))]
+
+gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(metadata(se.paired.genes)$annotation))
+gsmatrix <- incidence(gsc)
+dim(gsmatrix)
+
+# Discard genes not in our data and genes not in the gene sets
+
+gsmatrix <- gsmatrix[, colnames(gsmatrix) %in% rownames(se.paired.genes)]
+dim(gsmatrix)
+
+se.paired.gsea <- se.paired.genes[colnames(gsmatrix), ]
+dim(se.paired.genes)
+dim(se.paired.gsea)
+dgenorm.gsea <- dgenorm[colnames(gsmatrix), ]
+dim(dgenorm)
+dim(dgenorm.gsea)
+
+## Filtering gene sets with a minimum size of 5
+gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
+dim(gsmatrix)
+
+## herp derp
+
+design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
+
+v <- voom(dgenorm, design, plot=FALSE)
+FDRcutoff <- 0.01
+mod0 <- model.matrix(~samplecodes, colData(se.paired.gsea))
+sv <- sva(v$E, mod = design, mod0 = mod0)
+design.voom <- ""
+design.voom <- cbind(design, sv$sv)
+
+fit <- lmFit(v, design.voom)
+fit <- eBayes(fit)
+toptable.gsea <- topTable(fit, coef = 2, n=Inf)
+
+## wubba lubba dup dup
+
+
+tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
+length(tGSgenes)
+head(tGSgenes)
+zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
+length(zS)
+head(zS)
+qqnorm(zS)
+abline(0,1)
+
+rnkGS <- sort(abs(zS), decreasing = TRUE)
+head(rnkGS,20)
+
+## plot stuff
+plotGS <- function(se, gs, pheno, ...) {
+    l <- levels(colData(se)[, pheno])
+    idxSamples1 <- colData(se)[, pheno] == l[1]
+    idxSamples2 <- colData(se)[, pheno] == l[2]
+    exps1 <- rowMeans(assays(se)$logCPM[gs, idxSamples1])
+    exps2 <- rowMeans(assays(se)$logCPM[gs, idxSamples2])
+    rng <- range(c(exps1, exps2))
+    plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
+        xlab = l[1], ylab = l[2], ...)
+    abline(a = 0, b = 1, lwd = 2, col = "red")
+}
+genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
+genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
+par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
+plotGS(se.paired.gsea, genesGS1, "gender", main = names(rnkGS)[1], cex.lab = 2, las = 1)
+plotGS(se.paired.gsea, genesGS2, "gender", main = names(rnkGS)[6], cex.lab = 2, las = 1)
+```
+
 ###Functional enrichment 
 
 ####Over represented GOs
@@ -614,86 +694,7 @@ head(KEGGresults)
 
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
-### GENE SET EXPRESION ANALYSIS
-
-```{r}
-
-data(c2BroadSets)
-
-# Filtering to only KEGG, Reactome and BioCarta
-gsc <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
-               grep("^REACTOME", names(c2BroadSets)), grep("^BIOCARTA", names(c2BroadSets)))]
-
-gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(metadata(se.paired.genes)$annotation))
-gsmatrix <- incidence(gsc)
-dim(gsmatrix)
-
-# Discard genes not in our data and genes not in the gene sets
-
-gsmatrix <- gsmatrix[, colnames(gsmatrix) %in% rownames(se.paired.genes)]
-dim(gsmatrix)
-
-se.paired.gsea <- se.paired.genes[colnames(gsmatrix), ]
-dim(se.paired.genes)
-dim(se.paired.gsea)
-dgenorm.gsea <- dgenorm[colnames(gsmatrix), ]
-dim(dgenorm)
-dim(dgenorm.gsea)
-
-## Filtering gene sets with a minimum size of 5
-gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
-dim(gsmatrix)
-
-## herp derp
-
-design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
-
-v <- voom(dgenorm, design, plot=FALSE)
-FDRcutoff <- 0.01
-mod0 <- model.matrix(~samplecodes, colData(se.paired.gsea))
-sv <- sva(v$E, mod = design, mod0 = mod0)
-design.voom <- ""
-design.voom <- cbind(design, sv$sv)
-
-fit <- lmFit(v, design.voom)
-fit <- eBayes(fit)
-toptable.gsea <- topTable(fit, coef = 2, n=Inf)
-
-## wubba lubba dup dup
-
-
-tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
-length(tGSgenes)
-head(tGSgenes)
-zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
-length(zS)
-head(zS)
-qqnorm(zS)
-abline(0,1)
-
-rnkGS <- sort(abs(zS), decreasing = TRUE)
-head(rnkGS,20)
-
-## plot stuff
-plotGS <- function(se, gs, pheno, ...) {
-    l <- levels(colData(se)[, pheno])
-    idxSamples1 <- colData(se)[, pheno] == l[1]
-    idxSamples2 <- colData(se)[, pheno] == l[2]
-    exps1 <- rowMeans(assays(se)$logCPM[gs, idxSamples1])
-    exps2 <- rowMeans(assays(se)$logCPM[gs, idxSamples2])
-    rng <- range(c(exps1, exps2))
-    plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
-        xlab = l[1], ylab = l[2], ...)
-    abline(a = 0, b = 1, lwd = 2, col = "red")
-}
-genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
-genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
-par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
-plotGS(se.paired.gsea, genesGS1, "gender", main = names(rnkGS)[1], cex.lab = 2, las = 1)
-plotGS(se.paired.gsea, genesGS2, "gender", main = names(rnkGS)[6], cex.lab = 2, las = 1)
-```
-
-## HIERARCHICAL CLUSTERING USING D.E. GENES
+## HIERARCHICAL CLUSTERING USING DE GENES
 
 Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
 
