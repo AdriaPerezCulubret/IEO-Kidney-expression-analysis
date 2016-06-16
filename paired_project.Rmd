@@ -44,7 +44,7 @@ library(org.Hs.eg.db)
 library(GOstats)
 library(biomaRt)
 library(KEGG.db)
-library(e1071)
+#library(e1071)
 library(GSEABase)
 library(GSVAdata)
 ```
@@ -52,7 +52,7 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documents/Github/IEO-Kidney-expression-analysis/seKIRC.rds"))
 
 se
 ```
@@ -159,7 +159,6 @@ colData(se.paired)$samplecodes <- substr(colnames(se.paired), 9, 12)
 
 ```{r}
 dge.filt <- DGEList(counts=assays(se.paired)$counts, genes=mcols(se.paired))
-dge.filt
 ```
 
 ```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
@@ -246,7 +245,7 @@ assays(se.paired.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
 
 ```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
-par(mfrow=c(9, 4 ), mar=c(4, 4, 3, 1))
+par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "normal"]
 dgetmp <- dge.filt[, se.paired.genes$type == "normal"]
 for (i in 1:ncol(setmp)) {
@@ -281,7 +280,7 @@ Now, we examine the tumor samples:
 
 
 ```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
-par(mfrow=c(36, 4 ), mar=c(2, 2, 1, 1))
+par(mfrow=c(10, 4 ), mar=c(2, 2, 1, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
 dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
@@ -750,7 +749,7 @@ sampleClustering <- hclust(d)
 batch <- as.integer(factor(se.all.DE$type))
 sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
 names(batch) <- colnames(se.all.DE)
-outcome <- as.character("---")
+outcome <- as.character(se.all.DE$type)
 names(outcome) <- colnames(se.all.DE)
 sampleDendrogram <- dendrapply(sampleDendrogram,
 function(x, batch, labels) {
