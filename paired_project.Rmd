@@ -7,29 +7,29 @@
 ## Table of Contents
 
 - [LOADING DATA](#loading-data)
-	- [Explore phenotypic data](#exploring-phenotypic-data)
-	- [Explore feature data](#exploring-feature-data)
-	- [DGE object](#dge-object)
+    - [Explore phenotypic data](#exploring-phenotypic-data)
+    - [Explore feature data](#exploring-feature-data)
+    - [DGE object](#dge-object)
 - [QUALITY AND NORMALIZATION](#quality-and-normalization)
-	- [Library size filtering](#library-size-filtering)
-	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
-      - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
-      - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
-      - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
-	- [MA-plots](#ma-plots)
-	- [Batch identification](#batch-identification)
-      - [GENDER batch effect](#gender-batch-effect)
-      - [TSS batch effect](#tss-batch-effect)
-      - [PLATE batch effect](#plate-batch-effect)
-      - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
+    - [Library size filtering](#library-size-filtering)
+    - [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
+         - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
+         - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+    - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+    - [MA-plots](#ma-plots)
+    - [Batch identification](#batch-identification)
+        - [GENDER batch effect](#gender-batch-effect)
+        - [TSS batch effect](#tss-batch-effect)
+        - [PLATE batch effect](#plate-batch-effect)
+        - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
 - [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
-  - [Mean Variance relationship](#mean-variance-relationship)
-  - [Over vs Under](#over-vs-under)
-  - [Gene set expression analysis](#gene-set-expression-analysis)
-  - [Functional Enrichment](#functional-enrichment)
-    - [Over represented GOs](#over-represented-gos)
-    - [Over represented KEGGs](#over-represented-keggs)
-- [HIERACHLICAL CLUSTERING USING DE GENES](#hiercarchical-clustering-using-de-genes)
+    - [Mean Variance relationship](#mean-variance-relationship)
+    - [Over vs Under](#over-vs-under)
+    - [Gene set expression analysis](#gene-set-expression-analysis)
+    - [Functional Enrichment](#functional-enrichment)
+        - [Over represented GOs](#over-represented-gos)
+        - [Over represented KEGGs](#over-represented-keggs)
+- [HIERARCHICAL CLUSTERING USING DE GENES](#hierarchical-clustering-using-de-genes)
 - [SESSION INFORMATION](#session-information)
 
 ##LOADING DATA
@@ -107,8 +107,10 @@ At this point, we need to determine if the library sizes of tumor samples and no
 libsize <- data.frame(libsize = dge$sample$lib.size/1e6, type = se$type)
 
 summary(libsize)
+```
 
 
+```{r libsizeggplot, echo=FALSE, out.width="600px", fig.cap="Figure S1: Density distribution of library size."}
 ggplot(libsize) +
   geom_density(aes(x=libsize, fill=type), alpha=0.5) +
   ylab("density\n") + xlab("\nMillions of Reads") +
@@ -117,7 +119,7 @@ ggplot(libsize) +
 
 This past figure shows the density distribution on sequencing depth (milions of reads).
 
-```{r}
+```{r libsizeggplot2, echo=FALSE, out.width="600px", fig.cap="Figure S2: Histogram of library size distribution."}
 ggplot(libsize) +
   geom_histogram(
     aes(x=libsize, fill=type, y = (..count..)/sum(..count..)), alpha=0.5, binwidth=2
@@ -160,7 +162,7 @@ colData(se.paired)$samplecodes <- substr(colnames(se.paired), 9, 12)
 dge.filt <- DGEList(counts=assays(se.paired)$counts, genes=mcols(se.paired))
 ```
 
-```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
+```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S3: Library sizes in increasing order."}
 ord <- order(dge.filt$sample$lib.size/1e6)
 barplot(dge.filt$sample$lib.size[ord]/1e6, las=1, ylab="Millions of reads",
         xlab="Samples", col=c("blue", "red")[(se.paired$type[ord] == "tumor") + 1])
@@ -176,7 +178,7 @@ par(mfrow=c(1,2), mar=c(4,5,1,1))
 ####Expression levels comparison between all samples
 In the next part, we take a look on the distribution of expression values per sample in terms of logarithmic CPM units.
 
-```{r}
+```{r explevels, echo=FALSE, out.width="600px", fig.cap="Figure S4: Multidensity plot of log2CPM."}
 multidensity(as.list(as.data.frame(assays(se.paired)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "All samples", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
@@ -189,7 +191,13 @@ As we have more than 200 samples, we now display the normal and tumor distributi
 ```{r}
 normalCPM <- se.paired[,se.paired$type == "normal"]
 tumorCPM <- se.paired[,se.paired$type == "tumor"]
+```
+
+```{r explevels2, echo=FALSE, out.width="600px", fig.cap="Figure S5: Multidensity plot of normal samples log2CPM."}
 multidensity(as.list(as.data.frame(assays(normalCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Normal", cex.axis = 1.2, cex.lab = 1.5, las = 1)
+```
+
+```{r explevels3, echo=FALSE, out.width="600px", fig.cap="Figure S6: Multidensity plot of tumor samples log2CPM."}
 multidensity(as.list(as.data.frame(assays(tumorCPM)$logCPM)), xlab = "log2 CPM", legend = NULL, main = "Tumor", cex.axis = 1.2, cex.lab = 1.5, las = 1)
 ```
 
@@ -199,7 +207,10 @@ Now, we want to filter out the genes with a low expression. To do that, we can p
 
 ```{r}
 genemean <- data.frame(Means=aveLogCPM(assays(se.paired)$counts))
+```
 
+
+```{r expgenes, echo=FALSE, out.width="600px", fig.cap="Figure S7: Distribution of expression levels among genes."}
 ggplot(genemean) +
   geom_bar(aes(x=Means), binwidth = 1, fill="white", color="black") +
   theme_bw() + xlab("\nlog2CPM") + ylab("Count\n") +
@@ -242,7 +253,7 @@ assays(se.paired.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 
 We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
 
-```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
+```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S8: MA-plots of normal samples."}
 par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "normal"]
 dgetmp <- dge.filt[, se.paired.genes$type == "normal"]
@@ -276,7 +287,7 @@ dim(dgenorm) # After filtering DGE
 Now, we examine the tumor samples:
 
 
-```{r maPlotsTumor, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+```{r maPlotsTumor, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S9: MA-plots of tumor samples."}
 par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
 dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
@@ -320,7 +331,7 @@ table(data.frame(TYPE=se.paired.genes$type, GENDER=se.paired.genes$gender))
 ```
 
 
-```{r sampleClusteringGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S10: Hierarchical clustering of samples."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
@@ -341,7 +352,7 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TSS", sort(unique(batch)), levels(factor(se.paired.genes$gender))), fill=sort(unique(batch)))
 
 ```
-```{r mdsGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+```{r mdsGENDER, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S11: Multidimensional scaling plot of samples separated by gender."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
        fill=sort(unique(batch)), inset=0.05)
@@ -352,7 +363,7 @@ legend("bottomleft", paste("Gender", sort(unique(batch)), levels(factor(se.paire
 ```{r}
 table(data.frame(TYPE=se.paired.genes$type, TSS=tss))
 ```
-```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S12: Hierarchical clustering of samples separated by TSS."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
@@ -373,7 +384,7 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TSS", sort(unique(batch)), levels(factor(tss))), fill=sort(unique(batch)))
 
 ```
-```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+```{r mdsTSS, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S13: Multidimensional scaling plot of samples separated by TSS."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
        fill=sort(unique(batch)), inset=0.05)
@@ -385,7 +396,7 @@ legend("bottomleft", paste("TSS", sort(unique(batch)), levels(factor(tss))),
 table(data.frame(TYPE=se.paired.genes$type, PLATE=plate))
 ```
 
-```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S14: Hierarchical clustering of the samples separated by PLATE."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
@@ -406,7 +417,7 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("PLATE", sort(unique(batch)), levels(factor(plate))), fill=sort(unique(batch)))
 
 ```
-```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+```{r mdsPLATE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S15: Multidimensional scaling plot of the samples separated by PLATE."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
        fill=sort(unique(batch)), inset=0.05)
@@ -417,7 +428,7 @@ legend("bottomleft", paste("plate", sort(unique(batch)), levels(factor(plate))),
 ```{r}
 table(data.frame(TYPE=se.paired.genes$type, P.analyte = portionanalyte))
 ```
-```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S16: Hierarchical clustering of the samples separated by PortionAnalyte."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.paired.genes)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
@@ -438,7 +449,7 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))), fill=sort(unique(batch)))
 
 ```
-```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
+```{r mdsPortionanalyte, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S17: Multidimensional scaling plot of samples separated by PortionAnalyte."}
 plotMDS(dgenorm, labels=outcome, col=batch)
 legend("bottomleft", paste("Portionanalyte", sort(unique(batch)), levels(factor(portionanalyte))),
        fill=sort(unique(batch)), inset=0.05)
@@ -472,13 +483,23 @@ fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
 
-volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
-colnames(design)
 
+```
+
+```{r volcano, echo=FALSE, out.width="600px", fig.cap="Figure S18: Volcano plot of DE analysis."}
+volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
+```
+
+```
+colnames(design)
 ```
 
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
+```
+
+
+```{r Pvalue, echo=FALSE, out.width="600px", fig.cap="Figure S19: Pvalue distribution and qqplot."}
 par(mfrow=c(1,2), mar=c(4,5,2,2))
 hist(toptable$adj.P.Val, xlab="Raw P-values", main = "", las = 1)
 qqt(fit$t[,2], df=fit$df.prior + fit$df.residual, main="", pch = ".", cex=3, ylim = c(-50, 50))
@@ -488,9 +509,13 @@ abline(0,1, lwd = 2)
 ###Over vs under
 ```{r}
 summary(toptable)
+```
 
+```{r logfcdist, echo=FALSE, out.width="600px", fig.cap="Figure S20: Plot of logFC distribution."}
 ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
+```
 
+```{r}
 under_exp <- toptable[toptable$logFC <= -5 ,]
 over_exp  <- toptable[toptable$logFC >= 5,] 
 
@@ -571,9 +596,14 @@ head(tGSgenes)
 zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
 length(zS)
 head(zS)
+```
+
+```{r qqplotgsea, echo=FALSE, out.width="600px", fig.cap="Figure S21: GSEA qqplot of normal samples."}
 qqnorm(zS)
 abline(0,1)
+```
 
+```{r}
 rnkGS <- sort(abs(zS), decreasing = TRUE)
 head(rnkGS,20)
 
@@ -593,8 +623,8 @@ plotGS <- function(se, gs, pheno, ...) {
 ```
 
 
-```{r scatter, fig.height=20, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: "}
-par(mfrow = c(7, 3), mar = c(4, 4, 3, 1))
+```{r scatter, fig.height=20, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S22: Scatter plots of gene sets sorted by z-score. "}
+par(mfrow = c(7, 3), mar = c(4, 6, 3, 1))
 
 for (i in 1:20){
   genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[i], ] == 1)]
@@ -700,89 +730,6 @@ head(KEGGresults)
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 
-### GENE SET EXPRESION ANALYSIS
-
-```{r}
-### biocLite('GSEABase')
-### biocLite('GSVAdata')
-library(GSEABase)
-library(GSVAdata)
-data(c2BroadSets)
-
-# Filtering to only KEGG, Reactome and BioCarta
-gsc <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
-               grep("^REACTOME", names(c2BroadSets)), grep("^BIOCARTA", names(c2BroadSets)))]
-
-gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(metadata(se.paired.genes)$annotation))
-gsmatrix <- incidence(gsc)
-dim(gsmatrix)
-
-# Discard genes not in our data and genes not in the gene sets
-
-gsmatrix <- gsmatrix[, colnames(gsmatrix) %in% rownames(se.paired.genes)]
-dim(gsmatrix)
-
-se.paired.gsea <- se.paired.genes[colnames(gsmatrix), ]
-dim(se.paired.genes)
-dim(se.paired.gsea)
-dgenorm.gsea <- dgenorm[colnames(gsmatrix), ]
-dim(dgenorm)
-dim(dgenorm.gsea)
-
-## Filtering gene sets with a minimum size of 5
-gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
-dim(gsmatrix)
-
-## herp derp
-
-design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
-
-v <- voom(dgenorm, design, plot=FALSE)
-FDRcutoff <- 0.01
-mod0 <- model.matrix(~samplecodes, colData(se.paired.gsea))
-sv <- sva(v$E, mod = design, mod0 = mod0)
-design.voom <- ""
-design.voom <- cbind(design, sv$sv)
-
-fit <- lmFit(v, design.voom)
-fit <- eBayes(fit)
-toptable.gsea <- topTable(fit, coef = 2, n=Inf)
-
-## wubba lubba dup dup
-
-
-tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
-length(tGSgenes)
-head(tGSgenes)
-zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
-length(zS)
-head(zS)
-qqnorm(zS)
-abline(0,1)
-
-rnkGS <- sort(abs(zS), decreasing = TRUE)
-head(rnkGS,20)
-
-## plot stuff
-plotGS <- function(se, gs, pheno, ...) {
-    l <- levels(colData(se)[, pheno])
-    idxSamples1 <- colData(se)[, pheno] == l[1]
-    idxSamples2 <- colData(se)[, pheno] == l[2]
-    exps1 <- rowMeans(assays(se)$logCPM[gs, idxSamples1])
-    exps2 <- rowMeans(assays(se)$logCPM[gs, idxSamples2])
-    rng <- range(c(exps1, exps2))
-    plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
-        xlab = l[1], ylab = l[2], ...)
-    abline(a = 0, b = 1, lwd = 2, col = "red")
-}
-genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
-genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
-par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
-plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[1], cex.lab = 2, las = 1)
-plotGS(se.paired.gsea, genesGS2, "type", main = names(rnkGS)[6], cex.lab = 2, las = 1)
-```
-
-
 ## HIERARCHICAL CLUSTERING USING DE GENES
 
 
@@ -804,7 +751,7 @@ se.all.DE      <- se[DE.genes,]
 dgenorm.all.DE <- dge[DE.genes,]
 ```
 
-```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S23: Hierarchical clustering of the samples used in the analysis using only the DE genes."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.DE)$logCPMnorm, method="spearman"))
 sampleClustering <- hclust(d)
@@ -826,7 +773,7 @@ legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.DE$type))
 
 ```
 
-```{r sampleClusteringDEALL, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+```{r sampleClusteringDEALL, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S24: Hierarchical clustering of all samples using only the DE genes."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.all.DE)$logCPM, method="spearman"))
 sampleClustering <- hclust(d)
