@@ -96,7 +96,6 @@ Moreover, we calculate $\log_2$ CPM values of expression and we save them in an 
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
 
-
 ##QUALITY AND NORMALIZATION
 
 ###Library size filtering
@@ -156,7 +155,6 @@ summary(se.paired$type)
 colData(se.paired)$samplecodes <- substr(colnames(se.paired), 9, 12)
 ```
 
-
 ```{r}
 dge.filt <- DGEList(counts=assays(se.paired)$counts, genes=mcols(se.paired))
 ```
@@ -184,7 +182,6 @@ multidensity(as.list(as.data.frame(assays(se.paired)$logCPM)), xlab = "log2 CPM"
 We cannot observe significant diferences between samples in terms of expression levels.
 
 As we have more than 200 samples, we now display the normal and tumor distribution separately.
-
 
 ####Expression levels comparison between normal and tumor
 
@@ -258,7 +255,6 @@ for (i in 1:ncol(setmp)) {
   lines(lo$x, lo$y, col="red", lwd=2)
 }
 ```
-
 
 After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
 
@@ -457,7 +453,6 @@ In order to identify differentially expressed genes, we used a linear model with
 
 We chose a False Discovery Rate of 0.01 (1%). We corrected#### Over represented KEGGs
 
-
 ###Mean variance relationship
 ```{r}
 
@@ -617,7 +612,6 @@ KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
 head(KEGGresults)
 ```
 
-
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
 
 ### GENE SET EXPRESION ANALYSIS
@@ -741,7 +735,6 @@ legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.DE$type))
 
 ```
 
-
 ```{r sampleClusteringDEALL, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
 d <- as.dist(1-cor(assays(se.all.DE)$logCPM, method="spearman"))
@@ -763,10 +756,6 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.all.DE$type))), fill=sort(unique(batch)))
 
 ```
-
-
-## NAIVE BAYES CLASSIFIER
-
 
 
 ##SESSION INFORMATION
