@@ -8,7 +8,7 @@
 % {gos} Genetics of Sex 
 % {mp} Multiparental Populations
 
-\title{Kidney renal clear cell carcinoma expression analyse}
+\title{Kidney Renal Clear Cell Carcinoma expression analysis}
 
 \author[$\ast$1]{Bofill A,}
 \author[$\ast$1]{Castillo S,}
@@ -68,35 +68,41 @@ Parlar de lo desconegut i putes que es aquest cancer i tambe parlar de la import
 
 \section*{Materials and Methods}
 
-\subsection*{Data and sample filtering}
-The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas \href{http://www.cancergenome.nih.gov}{TCGA}. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. Each one of the samples have a total of 20115 genes. We have applied several filters to reduce the data samples:
-\begin{itemize}
-\item \textit{ Library size filtering:} In order to obtain a more reliable data, we need to filter out the samples with a low sequencing depth (< 45 Millions per read). We obtain a filtered data of: 298 tumor and 48 normal samples.
-\item \textit{Paired data filtering:} The next step is pairing the normal and tumor data. It allows the reduction of our set and to obtain a more accurate information. This filter results in 38 normal and 38 tumor samples.
-\end{itemize}
-We also need to apply filters to reduce the gene sets:
-\begin{itemize}
-\item \textit{ expression levels filter:} To filter out the genes with a low expression, we use a cut-off of 1 log Counts per Milions (logCPM). With this filter we reduce the number of genes from 20.115 to 11.742 genes.
-Manuscripts submitted to GENETICS should contain a clear de- scription of the experimental design in sufficient detail so that the experimental analysis could be repeated by another scientist
-\end{itemize}
+\subsection*{Data characterization}
+The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas \href{http://www.cancergenome.nih.gov}{TCGA}. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each one of the samples have a total of 20115 genes. 
 
-\subsection*{Statistics and Data Analysis } 
-All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}.
-\subsubsection*{Differential expression analysis:}
- EdgeR package from Bioconductor software has been used for the differentially expressed gene identification analyse. To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient. TEST UTILITZAT, P-VALUES USATS, ADJUSTED.
- 
- We apply two different filters. For one hand a p-value threshold  
- FILTRES: p-value, foldChange.
- palicant filtre p-value obtenim 3 tipus: over,under all.
- filtre foldChange: strongly over-express, strongly under-express.
+\subsection*{Statistics and data analysis}
+All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. CITAAAAAA!!! EdgeR package from Bioconductor has been used for the differentially expressed gene identification analysis.  CITAAAAAA!
 
-A Gene Ontology analysis (GO), was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms (P< 0.01).  Three Enrichment Tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO results are available in the supporting materials together with the raw p-values.
+\subsubsection*{Quality and normalization }
+: The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
 
-All packages used in this project could be viewed on the supplementary section of our project.
+To filter out the genes with a low or without expression, we analysed the distribution of expression levels among genes using the log Counts Per Millions measure (logCPM) (CITAAAAAAA). (GRAFICA? S7). We determined a cut-off of 1 logCPM. With this filter we reduce the number of genes from 20,115 to 12,495 genes.
+
+The Trimmed Mean of M.-values method (TMM) (CITAAAA! Robinson and Oshlack, 2010), implemented in the EdgeR package, was used to normalize the expression values.
+
+Analysing MA-plots, a normal sample (TGCA-CW-5591) was found to have an abnormal major gene expression bias in the association between the fold-changes and average expression, resulting in a large dependence between both variables of the MA plot. For this reason, this sample and its paired in the tumour set were removed from the analysis.
 
 
+\subsubsection*{Batch Effect Analyses}
+: Four possible sources of variation were considered for the batch effect identification: Gender, Tissue Source Site (TSS), Plate, and portion analyte. For each one of these batch indicators, we performed a hierarchical clustering using the Spearman correlation coefficient and a multidimensional scaling plot, in order to assess their possible effect. We conclude that none of them confound the primary source of variation, which in this case is the cell-type (tumour/normal).
+
+\subsubsection*{Differential expression analysis	}
+: To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient.
+
+We modelled the mean variance trend of logCPM values, computing the weights of this relationship at the individual observation level. In order to perform this part, we applied the voom function, implemented in the limma R-package, which is part of the BioConductor project (CITAAAAA!). A Surrogate Variable Analysis (SVA) was performed to identify the possibles sources of variation that are not related with our variables of interest (cell-type). (Leek and Storey 2007).
+
+After fitting the data to the linear model, we applied the 	empirical Bayes approach (eBayes) that should result in a far more stable inference (CITAAA: Smyth GK 2004 linear models and empirical baytes...). A False Discovery Rate (FDR)(CITAAAAA: Benjamini, Y. and Y. Hochberg, 1995 Controlling the False Dis- covery Rate: A Practical and Powerful Approach to Multi- ple Testing. Journal of the Royal Statistical Society. Series B (Methodological) 57: 289 – 300.) cut-off of 0.01 was applied to classify the genes as over-expressed, under-expressed or without changed in expression. In order to reduce the number of differentially expressed genes, we classified the genes in two further groups: strongly over-expressed, using a log Fold-changes cut-off of 5 (logFC > 5), and strongly under-expressed (logFC < 5). 
+
+\subsubsection*{Gene Set Enrichment Analysis}
+:  Using GSEABase package from the BioConductor project, the simple Gene Set Enrichment Analysis (GSEA) (CITAAA) algorithm was applied in order to assess differences in  expression at the pathway level. We used the data set called c2BroadSets from the GSVAdata to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BIOCARTA. (CITAAAAAAA).
 
 
+\subsubsection*{Functional Enrichment}
+: A Gene Ontology analysis (GO) was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms (P< 0.01). Three enrichment tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO results are available in the supporting materials together with the raw p-values.
+
+\subsubsection*{Hierarchical Clustering using strongly DE Genes}
+: We use the strongly over-expressed genes and under-expressed genes, a total of 77 genes, to determine if these genes alone are able to separate our samples in two clusters using a Hierarchical Clustering approach (CITA SPEARRMAAAN). This approach has been applied over the 38 paired samples and also over the whole set of samples (614 samples).
 
 \subsection*{Data Availability}
 
@@ -170,6 +176,8 @@ Table \ref{tab:shape-functions} shows an example table. Avoid shading, color typ
 
 Tables numbers are given in Arabic numerals. Tables should not be numbered 1A, 1B, etc., but if necessary, interior parts of the table can be labeled A, B, etc. for easy reference in the text.  
 
+
+Leek, J. T. and J. D. Storey, 2007 Capturing heterogeneity in gene expression studies by surrogate variable analysis. PLoS Genetics 3: 1724–1735.
 
 \begin{table*}[htbp]
 \centering
