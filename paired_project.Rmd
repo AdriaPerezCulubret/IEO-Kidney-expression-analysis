@@ -53,7 +53,7 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documents/GitHub/IEO-Kidney-expression-analysis/seKIRC.rds"))
 
 se
 ```
