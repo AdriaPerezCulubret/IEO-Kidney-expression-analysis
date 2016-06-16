@@ -13,22 +13,23 @@
 - [QUALITY AND NORMALIZATION](#quality-and-normalization)
 	- [Library size filtering](#library-size-filtering)
 	- [Genes Filtering: Distribution of expression levels](#genes-filtering-distribution-of-expression-levels)
-    - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
-    - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
-    - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
+      - [Expression levels comparison between all sampes](#expression-levels-comparison-between-all-samples)
+      - [Expression levels comparison between normal and tumor](#expression-levels-comparison-between-normal-and-tumor)
+      - [Distribution of expression levels among genes](#distribution-of-expression-levels-among-genes)
 	- [MA-plots](#ma-plots)
 	- [Batch identification](#batch-identification)
       - [GENDER batch effect](#gender-batch-effect)
-    - [TSS batch effect](#tss-batch-effect)
-    - [PLATE batch effect](#plate-batch-effect)
-    - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
+      - [TSS batch effect](#tss-batch-effect)
+      - [PLATE batch effect](#plate-batch-effect)
+      - [PORTION-ANALYTE batch effect](#portion-analyte-batch-effect)
 - [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
   - [Mean Variance relationship](#mean-variance-relationship)
   - [Over vs Under](#over-vs-under)
+  - [Gene set expression analysis](#gene-set-expression-analysis)
   - [Functional Enrichment](#functional-enrichment)
     - [Over represented GOs](#over-represented-gos)
     - [Over represented KEGGs](#over-represented-keggs)
-- [HIERACHLICAL CLUSTERING USING DE GENES](#Hiercarchical-clustering-using-DE-genes)
+- [HIERACHLICAL CLUSTERING USING DE GENES](#hiercarchical-clustering-using-de-genes)
 - [SESSION INFORMATION](#session-information)
 
 ##LOADING DATA
@@ -44,6 +45,9 @@ library(org.Hs.eg.db)
 library(GOstats)
 library(biomaRt)
 library(KEGG.db)
+#library(e1071)
+library(GSEABase)
+library(GSVAdata)
 ```
 
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
@@ -84,7 +88,6 @@ rowRanges(se)
 We create an object to hold the dataset to be analysed in a better and more comprehensive way.
 
 ```{r}
-library(edgeR)
 dge <- DGEList(counts=assays(se)$counts, genes=mcols(se))
 ```
 
@@ -93,7 +96,6 @@ Moreover, we calculate $\log_2$ CPM values of expression and we save them in an 
 ```{r}
 assays(se)$logCPM <- cpm(dge, log=TRUE, prior.count=0.5)
 ```
-
 
 ##QUALITY AND NORMALIZATION
 
@@ -154,10 +156,8 @@ summary(se.paired$type)
 colData(se.paired)$samplecodes <- substr(colnames(se.paired), 9, 12)
 ```
 
-
 ```{r}
 dge.filt <- DGEList(counts=assays(se.paired)$counts, genes=mcols(se.paired))
-dge.filt
 ```
 
 ```{r libsizes, echo=FALSE, out.width="600px", fig.cap="Figure S1: Library sizes in increasing order."}
@@ -183,7 +183,6 @@ multidensity(as.list(as.data.frame(assays(se.paired)$logCPM)), xlab = "log2 CPM"
 We cannot observe significant diferences between samples in terms of expression levels.
 
 As we have more than 200 samples, we now display the normal and tumor distribution separately.
-
 
 ####Expression levels comparison between normal and tumor
 
@@ -244,7 +243,7 @@ assays(se.paired.genes)$logCPMnorm <- cpm(dgenorm, log=TRUE, prior.count=0.5)
 We look at the MA-plots of the normal samples to see if there are systematic biases in gene expression levels in any of the sampes. We expect the slope to be around zero.
 
 ```{r maPlotsNormal, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the normal samples."}
-par(mfrow=c(9, 4 ), mar=c(4, 4, 3, 1))
+par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "normal"]
 dgetmp <- dge.filt[, se.paired.genes$type == "normal"]
 for (i in 1:ncol(setmp)) {
@@ -258,7 +257,6 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
-
 After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
 
 ```{r}
@@ -271,12 +269,15 @@ dim(se.paired.genes) # After filtering SE
 
 dge.filt <- dge.filt[, !substr(rownames(dge.filt$samples), 1, 12) %in% "TCGA.CW.5591"]
 dim(dge.filt) # After filtering DGE
+
+dgenorm <- dgenorm[, !substr(rownames(dgenorm$samples), 1, 12) %in% "TCGA.CW.5591"]
+dim(dgenorm) # After filtering DGE
 ```
 Now, we examine the tumor samples:
 
 
-```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
-par(mfrow=c(36, 4 ), mar=c(2, 2, 1, 1))
+```{r maPlotsTumor, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
 dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
@@ -292,9 +293,6 @@ for (i in 1:ncol(setmp)) {
 
 
 As we can see, we don’t see any tumor samples with major biases in gene expression
-
-<br/>   
-
 
 ###Batch identification
 
@@ -452,16 +450,21 @@ The Hierarchical clustering and the Multidimensional Scaling plots show a clear 
 
 ## DIFFERENTIAL EXPRESSION ANALYSIS
 
+In order to identify differentially expressed genes, we used a linear model with two factors: one being the cell type (tumor or normal) and the other being the individual/sample.
+
+We chose a False Discovery Rate of 0.01 (1%). We corrected#### Over represented KEGGs
+
 ###Mean variance relationship
 ```{r}
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
-
 v <- voom(dgenorm, design, plot=FALSE)
+dim(se.paired.genes)
+dim(dgenorm)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
-design.voom <- "" ?????????
+design.voom <- ""
 design.voom <- cbind(design, sv$sv)
 
 
@@ -513,19 +516,104 @@ toptable[toptable$symbol == "VHL1",]
 # PBRM1 i SETD2 is over y es BIEN.
 ```
 
-###Functional enrichment 
 
+### Gene set expression analysis
+
+```{r}
+
+data(c2BroadSets)
+
+# Filtering to only KEGG, Reactome and BioCarta
+gsc <- c2BroadSets[c(grep("^KEGG", names(c2BroadSets)),
+               grep("^REACTOME", names(c2BroadSets)), grep("^BIOCARTA", names(c2BroadSets)))]
+
+gsc <- mapIdentifiers(gsc, AnnoOrEntrezIdentifier(metadata(se.paired.genes)$annotation))
+gsmatrix <- incidence(gsc)
+dim(gsmatrix)
+
+# Discard genes not in our data and genes not in the gene sets
+
+gsmatrix <- gsmatrix[, colnames(gsmatrix) %in% rownames(se.paired.genes)]
+dim(gsmatrix)
+
+se.paired.gsea <- se.paired.genes[colnames(gsmatrix), ]
+dim(se.paired.genes)
+dim(se.paired.gsea)
+dgenorm.gsea <- dgenorm[colnames(gsmatrix), ]
+dim(dgenorm)
+dim(dgenorm.gsea)
+
+## Filtering gene sets with a minimum size of 5
+gsmatrix <- gsmatrix[rowSums(gsmatrix) >= 5, ]
+dim(gsmatrix)
+
+## herp derp
+
+design <- model.matrix(~type + samplecodes, data = colData(se.paired.gsea))
+
+v <- voom(dgenorm, design, plot=FALSE)
+FDRcutoff <- 0.01
+mod0 <- model.matrix(~samplecodes, colData(se.paired.gsea))
+sv <- sva(v$E, mod = design, mod0 = mod0)
+design.voom <- ""
+design.voom <- cbind(design, sv$sv)
+
+fit <- lmFit(v, design.voom)
+fit <- eBayes(fit)
+toptable.gsea <- topTable(fit, coef = 2, n=Inf)
+
+## wubba lubba dup dup
+
+
+tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
+length(tGSgenes)
+head(tGSgenes)
+zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
+length(zS)
+head(zS)
+qqnorm(zS)
+abline(0,1)
+
+rnkGS <- sort(abs(zS), decreasing = TRUE)
+head(rnkGS,20)
+
+## plot stuff
+plotGS <- function(se, gs, pheno, ...) {
+    l <- levels(colData(se)[, pheno])
+    idxSamples1 <- colData(se)[, pheno] == l[1]
+    idxSamples2 <- colData(se)[, pheno] == l[2]
+    exps1 <- rowMeans(assays(se)$logCPM[gs, idxSamples1])
+    exps2 <- rowMeans(assays(se)$logCPM[gs, idxSamples2])
+    rng <- range(c(exps1, exps2))
+    plot(exps1, exps2, pch = 21, col = "black", bg = "black", xlim = rng, ylim = rng, 
+        xlab = l[1], ylab = l[2], ...)
+    abline(a = 0, b = 1, lwd = 2, col = "red")
+}
+
+```
+
+
+```{r scatter, fig.height=20, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: "}
+par(mfrow = c(7, 3), mar = c(4, 4, 3, 1))
+
+for (i in 1:20){
+  genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[i], ] == 1)]
+  plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[i], cex.lab = 2, las = 1)
+  
+}
+```
+
+###Functional enrichment 
 
 ####Over represented GOs
 
 ```{r}
-
 DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BPi",
-            pvalueCutoff=0.01, testDirection="over")
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
 
 conditional(params) <- TRUE
 hgOver <- hyperGTest(params)
@@ -536,21 +624,17 @@ GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
 
 htmlReport(hgOver, file = "gotests.html")
-browseURL("gotests.html")
 ```
-
-
 
 #### GOs (Overexpressed DE)
 
 ```{r}
-
 DEgenes <- rownames(over_exp.all)[over_exp.all$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
 
 conditional(params) <- TRUE
 hgOver <- hyperGTest(params)
@@ -563,9 +647,7 @@ GOresultsover <- GOresultsover[order(GOresultsover$Pvalue, decreasing = FALSE), 
 head(GOresultsover)
 
 htmlReport(hgOver, file = "gotestsover.html")
-browseURL("gotestsover.html")
 ```
-
 
 #### GOs (Underexpressed DE)
 ```{r}
@@ -574,8 +656,8 @@ DEgenes <- rownames(under_exp.all)[under_exp.all$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
 
 conditional(params) <- TRUE
 hgUnder <- hyperGTest(params)
@@ -585,12 +667,11 @@ GOresultsunder <- GOresultsover[GOresultsunder$Size >= 5 & GOresultsunder$Count 
 GOresultsunder <- GOresultsunder[order(GOresultsunder$OddsRatio, decreasing = TRUE), ]
 GOresultsunder <- GOresultsunder[order(GOresultsunder$Pvalue, decreasing = FALSE), ]
 
-head(GOresultsover)
+head(GOresultsunder)
 
 
 htmlReport(hgUnder, file = "gotestsunder.html")
-browseURL("gotestsunder.html")
-
+```
 
 #### Over represented KEGGs
 
@@ -599,7 +680,7 @@ DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
 length(DEgenes)
 geneUniverse <- rownames(se.paired.genes)
 params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
+              annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
 
 hgOver <- hyperGTest(params)
 
@@ -617,6 +698,7 @@ head(KEGGresults)
 ```
 
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
+
 
 ### GENE SET EXPRESION ANALYSIS
 
@@ -700,7 +782,9 @@ plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[1], cex.lab = 2, la
 plotGS(se.paired.gsea, genesGS2, "type", main = names(rnkGS)[6], cex.lab = 2, las = 1)
 ```
 
-## HIERCHICAL CLUSTERING USING D.E. GENES
+
+## HIERARCHICAL CLUSTERING USING DE GENES
+
 
 Then, we performed a Hierarchical clustering and we plotted a Multidimensional scale plot using only the 77 D.E. genes. 
 
@@ -711,13 +795,14 @@ head(colnames(colData(se.paired.genes)))
 DE.genes <-  rownames(se.paired.genes) %in% rownames(over_exp) | 
              rownames(se.paired.genes) %in% rownames(under_exp)
 
-# Filter SE object using DE.genes
+# Filter SE object using DE.genes (only paired samples)
 se.DE  <- se.paired.genes[DE.genes,]
 dgenorm.DE <- dgenorm[DE.genes,]
 
-
+# Filter SE object using DE.genes (all samples)
+se.all.DE      <- se[DE.genes,]
+dgenorm.all.DE <- dge[DE.genes,]
 ```
-
 
 ```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
@@ -726,7 +811,7 @@ sampleClustering <- hclust(d)
 batch <- as.integer(factor(se.DE$type))
 sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
 names(batch) <- colnames(se.DE)
-outcome <- paste(substr(colnames(se.DE), 9, 12), as.character(se.DE$type), sep="-")
+outcome <- as.character(se.DE$type)
 names(outcome) <- colnames(se.DE)
 sampleDendrogram <- dendrapply(sampleDendrogram,
                                function(x, batch, labels) {
@@ -741,11 +826,28 @@ legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.DE$type))
 
 ```
 
-```{r mdsDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S7: Multidimensional scaling plot of the samples."}
-plotMDS(dgenorm.DE, labels=outcome, col=batch)
-legend("bottomleft", paste("Type", sort(unique(batch)), levels(factor(se.paired.genes$gender))),
-       fill=sort(unique(batch)), inset=0.05)
+```{r sampleClusteringDEALL, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
+#logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
+d <- as.dist(1-cor(assays(se.all.DE)$logCPM, method="spearman"))
+sampleClustering <- hclust(d)
+batch <- as.integer(factor(se.all.DE$type))
+sampleDendrogram <- as.dendrogram(sampleClustering, hang=0.1)
+names(batch) <- colnames(se.all.DE)
+outcome <- as.character(se.all.DE$type)
+names(outcome) <- colnames(se.all.DE)
+sampleDendrogram <- dendrapply(sampleDendrogram,
+function(x, batch, labels) {
+if (is.leaf(x)) {
+attr(x, "nodePar") <- list(lab.col=as.vector(batch[attr(x, "label")]))
+attr(x, "label") <- as.vector(labels[attr(x, "label")])
+}
+x
+}, batch, outcome)
+plot(sampleDendrogram, main="Hierarchical clustering of samples")
+legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.all.DE$type))), fill=sort(unique(batch)))
+
 ```
+
 
 ##SESSION INFORMATION
 
