@@ -275,8 +275,8 @@ dim(dgenorm) # After filtering DGE
 Now, we examine the tumor samples:
 
 
-```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
-par(mfrow=c(10, 4 ), mar=c(2, 2, 1, 1))
+```{r maPlotsTumor, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
 dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
