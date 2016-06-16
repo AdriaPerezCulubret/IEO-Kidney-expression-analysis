@@ -761,7 +761,7 @@ qqnorm(zS)
 abline(0,1)
 
 rnkGS <- sort(abs(zS), decreasing = TRUE)
-head(rnkGS,20)
+head(rnkGS,40)
 
 ## plot stuff
 plotGS <- function(se, gs, pheno, ...) {
@@ -775,11 +775,11 @@ plotGS <- function(se, gs, pheno, ...) {
         xlab = l[1], ylab = l[2], ...)
     abline(a = 0, b = 1, lwd = 2, col = "red")
 }
-genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
-genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
+genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[37], ] == 1)]
+genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[26], ] == 1)]
 par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
-plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[1], cex.lab = 2, las = 1)
-plotGS(se.paired.gsea, genesGS2, "type", main = names(rnkGS)[6], cex.lab = 2, las = 1)
+plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[37], cex.lab = 2, las = 1)
+plotGS(se.paired.gsea, genesGS2, "type", main = names(rnkGS)[26], cex.lab = 2, las = 1)
 ```
 
 
