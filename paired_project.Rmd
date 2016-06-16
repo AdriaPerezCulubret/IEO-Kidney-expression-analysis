@@ -53,7 +53,7 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -261,7 +261,7 @@ for (i in 1:ncol(setmp)) {
   A <- rowMeans(assays(setmp)$logCPMnorm)
   M <- assays(setmp)$logCPMnorm[, i] - A
   samplename <- substr(as.character(setmp$bcr_patient_barcode[i]), 1, 12)
-  smoothScatter(A, M, main=samplename, las=1)
+  smoothScatter(A, M, main=samplename, las=1, ylim=c(-15,15))
   abline(h=0, col="blue", lwd=2)
   lo <- lowess(M ~ A)
   lines(lo$x, lo$y, col="red", lwd=2)
@@ -620,13 +620,14 @@ plotGS <- function(se, gs, pheno, ...) {
     abline(a = 0, b = 1, lwd = 2, col = "red")
 }
 
+
 ```
 
 
-```{r scatter, fig.height=20, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S22: Scatter plots of gene sets sorted by z-score. "}
-par(mfrow = c(7, 3), mar = c(4, 6, 3, 1))
+```{r scatter, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S22: Scatter plots of gene sets sorted by z-score. "}
+par(mfrow = c(9, 3), mar = c(4, 6, 3, 1))
 
-for (i in 1:20){
+for (i in 1:27){
   genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[i], ] == 1)]
   plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[i], cex.lab = 2, las = 1)
   
@@ -692,7 +693,7 @@ params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
 conditional(params) <- TRUE
 hgUnder <- hyperGTest(params)
 GOresultsunder <- summary(hgUnder)
-GOresultsunder <- GOresultsover[GOresultsunder$Size >= 5 & GOresultsunder$Count >= 5,]
+GOresultsunder <- GOresultsunder[GOresultsunder$Size >= 5 & GOresultsunder$Count >= 5,]
 
 GOresultsunder <- GOresultsunder[order(GOresultsunder$OddsRatio, decreasing = TRUE), ]
 GOresultsunder <- GOresultsunder[order(GOresultsunder$Pvalue, decreasing = FALSE), ]
