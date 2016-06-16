@@ -1,6 +1,6 @@
 #KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
-##### Andreu Bofill Pumarla (andreu.bofill01@estudiant.upf.edu)
+##### Andreu Bofill Pumarola (andreu.bofill01@estudiant.upf.edu)
 ##### Sergio Castillo Lara (sergio.castillo01@estudiant.upf.edu)
 ##### Adrià Pérez Culubret (adria.perez06@estudiant.upf.edu)
 
@@ -463,8 +463,9 @@ We chose a False Discovery Rate of 0.01 (1%). We corrected#### Over represented 
 ```{r}
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
-
 v <- voom(dgenorm, design, plot=FALSE)
+dim(se.paired.genes)
+dim(dgenorm)
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
@@ -522,7 +523,6 @@ toptable[toptable$symbol == "VHL1",]
 
 ###Functional enrichment 
 
-
 ####Over represented GOs
 
 ```{r}
@@ -569,7 +569,6 @@ htmlReport(hgOver, file = "gotestsover.html")
 browseURL("gotestsover.html")
 ```
 
-
 #### GOs (Underexpressed DE)
 ```{r}
 
@@ -593,7 +592,7 @@ head(GOresultsunder)
 
 htmlReport(hgUnder, file = "gotestsunder.html")
 browseURL("gotestsunder.html")
-
+```
 
 #### Over represented KEGGs
 
@@ -625,8 +624,7 @@ When performing the functional enrichment analysis, some fo the gene sets have a
 ### GENE SET EXPRESION ANALYSIS
 
 ```{r}
-### biocLite('GSEABase')
-### biocLite('GSVAdata')
+
 data(c2BroadSets)
 
 # Filtering to only KEGG, Reactome and BioCarta
@@ -721,7 +719,6 @@ dgenorm.DE <- dgenorm[DE.genes,]
 se.all.DE      <- se[DE.genes,]
 dgenorm.all.DE <- dge[DE.genes,]
 ```
-
 
 ```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S6: Hierarchical clustering of the samples."}
 #logCPM <- cpm(dgenorm, log=TRUE, prior.count=3)
