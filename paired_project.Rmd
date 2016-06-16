@@ -1,6 +1,6 @@
 #KIDNEY RENAL CLEAR-CELL-CARCINOMA EXPRESSION ANALYSE
 
-##### Andreu Bofill Pumarla (andreu.bofill01@estudiant.upf.edu)
+##### Andreu Bofill Pumarola (andreu.bofill01@estudiant.upf.edu)
 ##### Sergio Castillo Lara (sergio.castillo01@estudiant.upf.edu)
 ##### Adrià Pérez Culubret (adria.perez06@estudiant.upf.edu)
 
@@ -49,7 +49,7 @@ library(KEGG.db)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
+se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -696,8 +696,8 @@ plotGS <- function(se, gs, pheno, ...) {
 genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
 genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
 par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
-plotGS(se.paired.gsea, genesGS1, "gender", main = names(rnkGS)[1], cex.lab = 2, las = 1)
-plotGS(se.paired.gsea, genesGS2, "gender", main = names(rnkGS)[6], cex.lab = 2, las = 1)
+plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[1], cex.lab = 2, las = 1)
+plotGS(se.paired.gsea, genesGS2, "type", main = names(rnkGS)[6], cex.lab = 2, las = 1)
 ```
 
 ## HIERCHICAL CLUSTERING USING D.E. GENES
