@@ -52,7 +52,7 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/Documents/Github/IEO-Kidney-expression-analysis/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 ```
@@ -275,8 +275,8 @@ dim(dgenorm) # After filtering DGE
 Now, we examine the tumor samples:
 
 
-```{r maPlotsTumor, fig.height=110, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
-par(mfrow=c(10, 4 ), mar=c(2, 2, 1, 1))
+```{r maPlotsTumor, fig.height=28, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: MA-plots of the tumor samples."}
+par(mfrow=c(10, 4 ), mar=c(4, 4, 3, 1))
 setmp <- se.paired.genes[, se.paired.genes$type == "tumor"]
 dgetmp <- dgenorm[, se.paired.genes$type == "tumor"]
 for (i in 1:ncol(setmp)) {
@@ -515,105 +515,6 @@ toptable[toptable$symbol == "VHL1",]
 # PBRM1 i SETD2 is over y es BIEN.
 ```
 
-###Functional enrichment 
-
-####Over represented GOs
-
-```{r}
-DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
-length(DEgenes)
-geneUniverse <- rownames(se.paired.genes)
-params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
-
-conditional(params) <- TRUE
-hgOver <- hyperGTest(params)
-GOresults <- summary(hgOver)
-GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5,]
-
-GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
-GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
-
-htmlReport(hgOver, file = "gotests.html")
-browseURL("gotests.html")
-```
-
-#### GOs (Overexpressed DE)
-
-```{r}
-DEgenes <- rownames(over_exp.all)[over_exp.all$adj.P.Val < 0.01]
-length(DEgenes)
-geneUniverse <- rownames(se.paired.genes)
-params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
-
-conditional(params) <- TRUE
-hgOver <- hyperGTest(params)
-GOresultsover <- summary(hgOver)
-GOresultsover <- GOresultsover[GOresultsover$Size >= 5 & GOresultsover$Count >= 5,]
-
-GOresultsover <- GOresultsover[order(GOresultsover$OddsRatio, decreasing = TRUE), ]
-GOresultsover <- GOresultsover[order(GOresultsover$Pvalue, decreasing = FALSE), ]
-
-head(GOresultsover)
-
-htmlReport(hgOver, file = "gotestsover.html")
-browseURL("gotestsover.html")
-```
-
-#### GOs (Underexpressed DE)
-```{r}
-
-DEgenes <- rownames(under_exp.all)[under_exp.all$adj.P.Val < 0.01]
-length(DEgenes)
-geneUniverse <- rownames(se.paired.genes)
-params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", ontology="BP",
-            pvalueCutoff=0.01, testDirection="over")
-
-conditional(params) <- TRUE
-hgUnder <- hyperGTest(params)
-GOresultsunder <- summary(hgUnder)
-GOresultsunder <- GOresultsover[GOresultsunder$Size >= 5 & GOresultsunder$Count >= 5,]
-
-GOresultsunder <- GOresultsunder[order(GOresultsunder$OddsRatio, decreasing = TRUE), ]
-GOresultsunder <- GOresultsunder[order(GOresultsunder$Pvalue, decreasing = FALSE), ]
-
-head(GOresultsunder)
-
-
-htmlReport(hgUnder, file = "gotestsunder.html")
-browseURL("gotestsunder.html")
-```
-
-#### Over represented KEGGs
-
-```{r}
-DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
-length(DEgenes)
-geneUniverse <- rownames(se.paired.genes)
-params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
-            annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
-
-hgOver <- hyperGTest(params)
-
-hgOver
-KEGGresults <- summary(hgOver)
-
-# Filtering by counts and size
-KEGGresults <- KEGGresults[KEGGresults$Size >= 5 & KEGGresults$Count >= 5, ]
-
-
-KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
-KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
-
-head(KEGGresults)
-```
-
-When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
-
 ### GENE SET EXPRESION ANALYSIS
 
 ```{r}
@@ -686,12 +587,122 @@ plotGS <- function(se, gs, pheno, ...) {
         xlab = l[1], ylab = l[2], ...)
     abline(a = 0, b = 1, lwd = 2, col = "red")
 }
-genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[1], ] == 1)]
-genesGS2 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[6], ] == 1)]
-par(mfrow = c(1, 2), mar = c(4, 5, 3, 4))
-plotGS(se.paired.gsea, genesGS1, "gender", main = names(rnkGS)[1], cex.lab = 2, las = 1)
-plotGS(se.paired.gsea, genesGS2, "gender", main = names(rnkGS)[6], cex.lab = 2, las = 1)
+
 ```
+
+
+```{r scatter, fig.height=20, fig.width=10, dpi=100, echo=FALSE, fig.cap="Figure S4: "}
+par(mfrow = c(7, 3), mar = c(4, 4, 3, 1))
+
+for (i in 1:20){
+  genesGS1 <- colnames(gsmatrix)[which(gsmatrix[names(rnkGS)[i], ] == 1)]
+  plotGS(se.paired.gsea, genesGS1, "type", main = names(rnkGS)[i], cex.lab = 2, las = 1)
+  
+}
+```
+
+
+
+###Functional enrichment 
+
+####Over represented GOs
+
+```{r}
+DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
+
+conditional(params) <- TRUE
+hgOver <- hyperGTest(params)
+GOresults <- summary(hgOver)
+GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5,]
+
+GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
+GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
+
+htmlReport(hgOver, file = "gotests.html")
+browseURL("gotests.html")
+```
+
+#### GOs (Overexpressed DE)
+
+```{r}
+DEgenes <- rownames(over_exp.all)[over_exp.all$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
+
+conditional(params) <- TRUE
+hgOver <- hyperGTest(params)
+GOresultsover <- summary(hgOver)
+GOresultsover <- GOresultsover[GOresultsover$Size >= 5 & GOresultsover$Count >= 5,]
+
+GOresultsover <- GOresultsover[order(GOresultsover$OddsRatio, decreasing = TRUE), ]
+GOresultsover <- GOresultsover[order(GOresultsover$Pvalue, decreasing = FALSE), ]
+
+head(GOresultsover)
+
+htmlReport(hgOver, file = "gotestsover.html")
+browseURL("gotestsover.html")
+```
+
+#### GOs (Underexpressed DE)
+```{r}
+
+DEgenes <- rownames(under_exp.all)[under_exp.all$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("GOHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", ontology="BP",
+              pvalueCutoff=0.01, testDirection="over")
+
+conditional(params) <- TRUE
+hgUnder <- hyperGTest(params)
+GOresultsunder <- summary(hgUnder)
+GOresultsunder <- GOresultsover[GOresultsunder$Size >= 5 & GOresultsunder$Count >= 5,]
+
+GOresultsunder <- GOresultsunder[order(GOresultsunder$OddsRatio, decreasing = TRUE), ]
+GOresultsunder <- GOresultsunder[order(GOresultsunder$Pvalue, decreasing = FALSE), ]
+
+head(GOresultsunder)
+
+
+htmlReport(hgUnder, file = "gotestsunder.html")
+browseURL("gotestsunder.html")
+```
+
+#### Over represented KEGGs
+
+```{r}
+DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
+
+hgOver <- hyperGTest(params)
+
+hgOver
+KEGGresults <- summary(hgOver)
+
+# Filtering by counts and size
+KEGGresults <- KEGGresults[KEGGresults$Size >= 5 & KEGGresults$Count >= 5, ]
+
+
+KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
+KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
+
+head(KEGGresults)
+```
+
+When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
+
+
 
 ## HIERARCHICAL CLUSTERING USING D.E. GENES
 
