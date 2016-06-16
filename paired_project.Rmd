@@ -25,7 +25,7 @@
 - [DIFFERENTIAL EXPRESSION ANALYSIS](#differential-expression-analysis)
     - [Mean Variance relationship](#mean-variance-relationship)
     - [Over vs Under](#over-vs-under)
-    - [Gene set expression analysis](#gene-set-expression-analysis)
+    - [Gene set enrichment analysis](#gene-set-enrichment-analysis)
     - [Functional Enrichment](#functional-enrichment)
         - [Over represented GOs](#over-represented-gos)
         - [Over represented KEGGs](#over-represented-keggs)
@@ -53,7 +53,7 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/Documents/GitHub/IEO-Kidney-expression-analysis/seKIRC.rds"))
+se <- readRDS(file.path("~/Documentos/MASTER/IEO/KIDNEY/seKIRC.rds"))
 
 se
 
@@ -271,22 +271,6 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
-After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
-
-```{r}
-
-dim(se.paired.genes) # Before filtering SE
-dim(dge.filt) # Before filtering DGE
-
-se.paired.genes <- se.paired.genes[,!se.paired.genes$bcr_patient_barcode %in% "TCGA-CW-5591"]
-dim(se.paired.genes) # After filtering SE
-
-dge.filt <- dge.filt[, !substr(rownames(dge.filt$samples), 1, 12) %in% "TCGA.CW.5591"]
-dim(dge.filt) # After filtering DGE
-
-dgenorm <- dgenorm[, !substr(rownames(dgenorm$samples), 1, 12) %in% "TCGA.CW.5591"]
-dim(dgenorm) # After filtering DGE
-```
 Now, we examine the tumor samples:
 
 
@@ -305,6 +289,22 @@ for (i in 1:ncol(setmp)) {
 }
 ```
 
+After observing them, one normal sample has been identified with a  biased gene expression, so we take it out of our dataset. This sample is the TGCA-CW-5591.
+
+```{r}
+
+dim(se.paired.genes) # Before filtering SE
+dim(dge.filt) # Before filtering DGE
+
+se.paired.genes <- se.paired.genes[,!se.paired.genes$bcr_patient_barcode %in% "TCGA-CW-5591"]
+dim(se.paired.genes) # After filtering SE
+
+dge.filt <- dge.filt[, !substr(rownames(dge.filt$samples), 1, 12) %in% "TCGA.CW.5591"]
+dim(dge.filt) # After filtering DGE
+
+dgenorm <- dgenorm[, !substr(rownames(dgenorm$samples), 1, 12) %in% "TCGA.CW.5591"]
+dim(dgenorm) # After filtering DGE
+```
 
 As we can see, we don’t see any tumor samples with major biases in gene expression
 
@@ -486,6 +486,7 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
+summary(res)
 
 
 ```
@@ -553,22 +554,12 @@ dim(over_exp)
 
 head(over_exp[order(over_exp$logFC, decreasing = TRUE),])
 head(under_exp[order(under_exp$logFC, decreasing = FALSE),])
-
-toptable[toptable$symbol == "PBRM1",]
-
-toptable[toptable$symbol == "SETD2",]
-
-toptable[toptable$symbol == "AKT",]
-
-toptable[toptable$symbol == "VHL1",]
-
-# PBRM1 i SETD2 is over y es BIEN.
 ```
 
 
-### Gene set expression analysis
+### Gene set enrichment analysis
 
-We performed a Gene set expression analysis. We used the data set called c2BroadSets from the GSVAdata, to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BIOCARTA.
+We performed a Gene set enrichment analysis. We used the data set called c2BroadSets from the GSVAdata, to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BIOCARTA.
 
 ```{r}
 
