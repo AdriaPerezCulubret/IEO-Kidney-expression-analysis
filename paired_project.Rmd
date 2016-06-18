@@ -494,23 +494,9 @@ summary(res)
 ```{r volcano, echo=FALSE, out.width="600px", fig.cap="Figure S18: Volcano plot of DE analysis."}
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 ```
-
-
-
-colnames(design)
-```
-
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
 ```
-
-```{r volcano2, echo=FALSE, out.width="600px", fig.cap="Figure S18b: Volcano plot of DE analysis with P-value."}
-
-ggplot(toptable) + geom_point(aes(x=logFC, y=-log10(adj.P.Val)), color="red") + theme_bw() +
-geom_vline(xintercept = 5, linetype="dashed") + geom_vline(xintercept = -5, linetype="dashed") + geom_hline(yintercept = 2, linetype="dashed")
-
-```
-
 
 ```{r Pvalue, echo=FALSE, out.width="600px", fig.cap="Figure S19: Pvalue distribution and qqplot."}
 par(mfrow=c(1,2), mar=c(4,5,2,2))
