@@ -80,15 +80,16 @@ We modelled the mean variance trend of logCPM values, computing the weights of t
 
 After fitting the data to the linear model, we applied the 	empirical Bayes approach (eBayes) that should result in a far more stable inference (CITAAA: Smyth GK 2004 linear models and empirical baytes...). A False Discovery Rate (FDR)(CITAAAAA: Benjamini, Y. and Y. Hochberg, 1995 Controlling the False Dis- covery Rate: A Practical and Powerful Approach to Multi- ple Testing. Journal of the Royal Statistical Society. Series B (Methodological) 57: 289 – 300.) cut-off of 0.01 was applied to classify the genes as over-expressed, under-expressed or without changed in expression. In order to reduce the number of differentially expressed genes, we classified the genes in two further groups: strongly over-expressed, using a log Fold-changes cut-off of 5 (logFC > 5), and strongly under-expressed (logFC < 5). 
 
-\subsubsection*{Gene Set Enrichment Analysis}
-:  Using GSEABase package from the BioConductor project, the simple Gene Set Enrichment Analysis (GSEA) (CITAAA) algorithm was applied in order to assess differences in  expression at the pathway level. We used the data set called c2BroadSets from the GSVAdata to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BIOCARTA. (CITAAAAAAA).
-
-
 \subsubsection*{Functional Enrichment}
-: A Gene Ontology analysis (GO) was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms (P< 0.01). Three enrichment tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO results are available in the supporting materials together with the raw p-values.
+: A Gene Ontology analysis (GO) and Kyoto Encyclopedia of Genes and Genomes (KEGG) analysis was performed with the differentially expressed genes set. Fisher's exact test was applied to obtain the most representative biological process gene ontology terms or KEGG pathways (P< 0.01). The enrichment tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO and KEGG results are available in the supporting materials together with the raw p-values.
 
-\subsubsection*{Hierarchical Clustering using strongly DE Genes}
+\subsubsection*{Gene Set Enrichment Analysis}
+:  Using GSEABase package from the BioConductor project, the Simple Gene Set Enrichment Analysis (GSEA) (CITAAA) algorithm was applied in order to assess differences in  expression at the pathway level. We used the data set called c2BroadSets from the GSVAdata to obtain the different gene sets, restricting the pathways to the ones from KEGG, REACTOME and BioCarta. (CITAAAAAAA). We used an FDR < 1\% to call the pathways differentially expressed.
+
+\subsubsection*{Hierarchical Clustering and Naive Bayes classifier}
 : We use the strongly over-expressed genes and under-expressed genes, a total of 199 genes, to determine if these genes alone are able to separate our samples in two clusters using a Hierarchical Clustering approach (CITA SPEARRMAAAN). This approach has been applied over the 38 paired samples and also over the whole set of samples (614 samples).
+
+Applying the R package e1071, a Naive Bayes Classifier (CITAA) was generated, using the paired samples as the training set, considering only the 199 strongly DE genes as features. This classifier was used to predict the cell type of the remaining 540 samples. 
 
 \subsection*{Data Availability}
 
@@ -106,70 +107,59 @@ Analysing individual genes previously found to be mutated in the KIRC developmen
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/fig1_volcano.png}
-\caption{Example figure from \url{10.1534/genetics.114.173807}. 
-}%
+\caption{Volcano plot of DE analysis }%
 \label{fig:spectrum}
 \end{figure}
 
-\subsection*{Hierarchical clustering}
-With a Hierarchical clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 2A). These results show that these 199 strongly DE genes could be used for building a classification method based on machine learning approach (CTAAA). 
+\subsection*{Functional Enrichment}
+The Functional Enrichment analysis using GO terms revealed 96 over-represented terms and 59 under-represented [Full results here and here]. The most representative terms in the over-represented group include cell-division and proliferation, intrinsic features for any malignant cells. 
 
-The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. Some of these samples are separated from the huge tumour cluster, while a handful of them are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
+Another group of representative terms are the ones related with regulation of immune response and T-cell functioning. This suggests that KIRC may cause a huge deregulation of the immune system, and might be a target for its treatment. 
+
+When looking at the under-represented terms, many of them are related with renal function like ion transport and small molecule metabolism. Several terms related with the oxidative phosphorilation pathway are under-represented along with fatty-acid degradation. This metabolical shift to fatty-acid synthesis and inactivation of oxidative phosphorilation was previously indentified in KIRC [citation].
+
+KEGG analysis results show that among the most represented pathways over the over-expressed DE genes, some KEGG pathways terms related to the immune system response, such as primary immunodeficiency and T-cell receptor signaling pathway, can be found.  These results are in line with the suggested hypothesis of an immune system deregulation in KIRC. Furthermore, the p53 signaling pathway is also found as one of the most over-represented pathways.
+
+On the other hand, oxidative phosphorylation and fatty acid degradation are found to be among the most represented pathways over the under expressed DE genes. As seen with the GO terms, this indicates a metabolic shift in KIRC to promote fatty acid synthesis and inactivates the oxidative phosphorylation.
+
+\subsection*{Gene Set Enrichment Analysis}
+The GSEA results show 677 DE pathways. In this study we only focused on the top ones. This results can be found on supplementary materials (Fig. S22).
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/fig3.png}
+\caption{Volcano plot of DE analysis }%
+\label{fig:spectrum}
+\end{figure}
+
+The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. 3A). We found several pathways of small molecules cation and glucose transport that are under-expressed in KIRC, suggesting that the renal functioning is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and inactivating the TCA cylce in favour of the pentose phosphate pathway, as suggested in [citaaaaaaaa]. 
+
+As previously mentioned in the Functional Enrichment results, many immune system sets are found to be differentially expressed. Primary immunodeficiency, T-cell apopotosis and PD1 signalling pathways, show us clues of how KIRC evades the immune function of the organism. The BioCarta T-cell apoptosis pathway is characteristic of the HIV infection and describes how the virus induces T-cell apoptosis. The fact that KIRC presents this feature indicates that this may be an useful mechanism for this tumour to not be recognized as a malignant cell.
+
+Programmed Cell Death Protein 1 (PD1/CD279) is a cell surface receptor that belongs to the immunoglobulin super-family and is expressed in T-cells. It functions as an immune checkpoint, negatively regulating the immune response (CITA Loise M Francisco...). PD1 plays an important role in down-regulating the immune system reducing autoimmunity and promoting self-tolerance through the induction of antigen-specific T-cell apoptosis.
+PD1 has been involved in the tumour cells escape from the host immune system (CITA Yoshiko iwai). This argument is in line with the over-expression of PD1 found in our GSEA results. This protein has been proposed as target for several drugs that are currently in different trial stages, such as Nivolumab, used as a possible second line treatment for renal cell carcinoma (CITA).
 
 
-taula amb x mes sobreexpressed, logFC...
+\subsection*{Naive Bayes classifier}
+With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 2A). These results show that these 199 strongly DE genes could be used for building a classification method based on machine learning (CTAAA). 
 
-3 o 4 genes
-GSA: suppl material, els més rellevants...
-	Canvi de bias metabolisme: clear cells: s'acumula lipids, son així de clares. Es frena metabolisme (degradació), disminuexi respiració oxidativa, immunnodeficiència, pd1 traget, 
+\begin{figure*}[htbp]
+\centering
+\includegraphics[width=\textwidth]{figures/fig2.png}
+\caption{NAIVE BAYES}%
+\label{fig:spectrum}
+\end{figure*}
 
-Functional enrichment: cell division, immuno,
+The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
 
-\section*{Additional guidelines}
+With the Naive Bayes Classifier, over the prediction of the cell type of the unpaired samples, we computed the specificity and sensitivity and we obtain a value of 0.971 and 0.921 respectively. The F-measure computed with these values results in a value of 0.0609. In the x CITAAAAA article, a similar classifier was built, but using a Support Vector Machine instead of a Naive Bayer Classifier. Although K-Fold Cross Validation was not done in our study, which could explain the differences in the evaluation of the effectiveness of this classifier, the specificity and sensitivity results are very similar.
 
-\subsection*{Numbers} In the text, write out numbers nine or less except as part of a date, a fraction or decimal, a percentage, or a unit of measurement. Use Arabic numbers for those larger than nine, except as the first word of a sentence; however, try to avoid starting a sentence with such a number.
-
-\subsection*{Units} Use abbreviations of the customary units of measurement only when they are preceded by a number: "3 min" but "several minutes". Write "percent" as one word, except when used with a number: "several percent" but "75\%." To indicate temperature in centigrade, use ° (for example, 37°); include a letter after the degree symbol only when some other scale is intended (for example, 45°K).
-
-\subsection*{Nomenclature and Italicization} Italicize names of organisms even when  when the species is not indicated.  Italicize the first three letters of the names of restriction enzyme cleavage sites, as in HindIII. Write the names of strains in roman except when incorporating specific genotypic designations. Italicize genotype names and symbols, including all components of alleles, but not when the name of a gene is the same as the name of an enzyme. Do not use "+" to indicate wild type. Carefully distinguish between genotype (italicized) and phenotype (not italicized) in both the writing and the symbolism.
 
 \section*{In-text Citations}
 
 Add citations using the \verb|\citep{}| command, for example \citep{neher2013genealogies} or for multiple citations, \citep{neher2013genealogies, rodelsperger2014characterization}
 
 \section*{Examples of Article Components}
-\label{sec:examples}
 
-The sections below show examples of different header levels, which you can use in the primary sections of the manuscript (Results, Discussion, etc.) to organize your content.
-
-\section*{First level section header}
-
-Use this level to group two or more closely related headings in a long article.
-
-\subsection*{Second level section header}
-
-Second level section text.
-
-\subsubsection*{Third level section header:}
-
-Third level section text. These headings may be numbered, but only when the numbers must be cited in the text. 
-
-\section*{Figures and Tables}
-
-Figures and Tables should be labelled and referenced in the standard way using the \verb|\label{}| and \verb|\ref{}| commands.
-
-\subsection*{Sample Figure}
-
-Figure \ref{fig:spectrum} shows an example figure.
-
-
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{example-figure}
-\caption{Example movie (the figure file above is used as a placeholder for this example). \textit{GENETICS} supports video and movie files that can be linked from any portion of the article - including the abstract. Acceptable formats include .asf, avi, .wav, and all types of Windows Media files.   
-}%
-\end{figure}
 
 
 \subsection*{\url Table}
