@@ -53,7 +53,9 @@ library(GSVAdata)
 We load the raw RNA-seq data counts set of Kidney renal clear-cell-carcinoma.
 
 ```{r}
-se <- readRDS(file.path("~/GitHub/KIDNEY/seKIRC.rds"))
+
+se <- readRDS(file.path("~/Documents/Github/IEO-Kidney-expression-analysis/seKIRC.rds"))
+
 
 se
 
@@ -494,23 +496,9 @@ summary(res)
 ```{r volcano, echo=FALSE, out.width="600px", fig.cap="Figure S18: Volcano plot of DE analysis."}
 volcanoplot(fit, coef = 2, highlight = 7, fit$genes$symbol, main = "Model", las = 1)
 ```
-
-
-
-colnames(design)
-```
-
 ```{r}
 toptable <- topTable(fit, coef = 2, n=Inf)
 ```
-
-```{r volcano2, echo=FALSE, out.width="600px", fig.cap="Figure S18b: Volcano plot of DE analysis with P-value."}
-
-ggplot(toptable) + geom_point(aes(x=logFC, y=-log10(adj.P.Val)), color="red") + theme_bw() +
-geom_vline(xintercept = 5, linetype="dashed") + geom_vline(xintercept = -5, linetype="dashed") + geom_hline(yintercept = 2, linetype="dashed")
-
-```
-
 
 ```{r Pvalue, echo=FALSE, out.width="600px", fig.cap="Figure S19: Pvalue distribution and qqplot."}
 par(mfrow=c(1,2), mar=c(4,5,2,2))
@@ -617,6 +605,10 @@ head(tGSgenes)
 zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
 length(zS)
 head(zS)
+pv <- pmin(pnorm(zS), 1 - pnorm(zS))
+pvadj <- p.adjust(pv, method = "fdr")
+DEgs <- names(pvadj)[which(pvadj < 0.01)]
+length(DEgs)
 ```
 
 ```{r qqplotgsea, echo=FALSE, out.width="600px", fig.cap="Figure S21: GSEA qqplot of normal samples."}
@@ -659,7 +651,7 @@ for (i in 1:27){
 
 We performed a functional enrichment analysis using Biological Process Gene Ontology terms. We performed a Fisher's Exact Test. We applied this methodology on three gene sets: one with all the differentially expressed genes (using an adjusted P-value of 0.01), another one with only over-expressed genes and finally one with only under-expressed genes (both using an adj. P-value threshold of 0.01).
 
-####Over represented GOs
+####Over represented GOs (ALL)
 
 ```{r}
 DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
@@ -727,7 +719,7 @@ head(GOresultsunder)
 htmlReport(hgUnder, file = "gotestsunder.html")
 ```
 
-#### Over represented KEGGs
+#### Over represented KEGGs (ALL)
 
 ```{r}
 DEgenes <- rownames(toptable)[toptable$adj.P.Val < 0.01]
@@ -749,6 +741,58 @@ KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
 KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
 
 head(KEGGresults)
+htmlReport(hgOver, file = "kegg.html")
+```
+
+
+#### Over represented KEGGs (Over expressed)
+
+```{r}
+DEgenes <- rownames(over_exp.all)[over_exp.all$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
+
+hgOver <- hyperGTest(params)
+
+hgOver
+KEGGresults <- summary(hgOver)
+
+# Filtering by counts and size
+KEGGresults <- KEGGresults[KEGGresults$Size >= 5 & KEGGresults$Count >= 5, ]
+
+
+KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
+KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
+
+head(KEGGresults)
+htmlReport(hgOver, file = "keggover.html")
+```
+
+#### Over represented KEGGs (Under expressed)
+
+```{r}
+DEgenes <- rownames(under_exp.all)[under_exp.all$adj.P.Val < 0.01]
+length(DEgenes)
+geneUniverse <- rownames(se.paired.genes)
+params <- new("KEGGHyperGParams", geneIds=DEgenes, universeGeneIds=geneUniverse,
+              annotation="org.Hs.eg.db", pvalueCutoff=0.01, testDirection="over")
+
+hgOver <- hyperGTest(params)
+
+hgOver
+KEGGresults <- summary(hgOver)
+
+# Filtering by counts and size
+KEGGresults <- KEGGresults[KEGGresults$Size >= 5 & KEGGresults$Count >= 5, ]
+
+
+KEGGresults <- KEGGresults[order(KEGGresults$OddsRatio, decreasing = TRUE), ]
+KEGGresults <- KEGGresults[order(KEGGresults$Pvalue, decreasing = FALSE), ]
+
+head(KEGGresults)
+htmlReport(hgOver, file = "keggunder.html")
 ```
 
 When performing the functional enrichment analysis, some fo the gene sets have an OddsRatio value of Infinite. Which is the biological meaning of this?
@@ -770,10 +814,11 @@ DE.genes <-  rownames(se.paired.genes) %in% rownames(over_exp) |
 se.DE  <- se.paired.genes[DE.genes,]
 dgenorm.DE <- dgenorm[DE.genes,]
 
-# Filter SE object using DE.genes (all samples)
+# Filter SE object using DE.genes (all samples except paired)
 
 se.all.DE <- se[mask,]            # ony high expressed genes
 se.all.DE <- se.all.DE[DE.genes]  # only DE genes
+se.all.DE <- se.all.DE[,!substr(colnames(se.filt), 9, 12) %in% common.codes]
 
 dgenorm.all.DE <- dgenorm[DE.genes,]  # only DE genes
 ```
