@@ -171,22 +171,32 @@ Tables numbers are given in Arabic numerals. Tables should not be numbered 1A, 1
 
 Leek, J. T. and J. D. Storey, 2007 Capturing heterogeneity in gene expression studies by surrogate variable analysis. PLoS Genetics 3: 1724–1735.
 
+\newcolumntype{b}{X}
+\newcolumntype{s}{>{\hsize=.5\hsize}X}
+
+
 \begin{table*}[htbp]
 \centering
 \caption{\bf Students and their grades}
 \begin{tableminipage}{\textwidth}
-\begin{tabularx}{\textwidth}{XXXX}
+\begin{tabularx}{\textwidth}{ssssssb}
 \hline
-Student & Grade\footnote{This is an example of a footnote in a table. Lowercase, superscript italic letters (a, b, c, etc.) are used by default. You can also use *, **, and *** to indicate conventional levels of statistical significance, explained below the table.} & Rank & Notes \\
+GOBPID & Pvalue & OddsRatio & ExpCount & Count & Size & Term\\
 \hline
-Alice & 82\% & 1 & Performed very well.\\
-Bob & 65\% & 3 & Not up to his usual standard.\\
-Charlie & 73\% & 2 & A good attempt.\\
+
+GO:0051301 & 0.000 & 1.534 & 165 & 206 & 402 & cell division\\
+GO:0051251 & 0.000 & 2.064 & 54 & 77 & 131 & positive regulation of lymphocyte activation\\
+GO:0007156 & 0.000 & 2.469 & 35 & 53 & 84 & homophilic cell adhesion via plasma membrane adhesion molecules\\
+GO:0008283 & 0.000 & 1.275 & 459 & 518 & 1117 & cell proliferation\\
+GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear cell proliferation\\
 \hline
 \end{tabularx}
   \label{tab:shape-functions}
 \end{tableminipage}
 \end{table*}
+
+
+
 
 
 \bibliography{example-bibliography}
