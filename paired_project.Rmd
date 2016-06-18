@@ -476,8 +476,7 @@ We chose a False Discovery Rate of 0.01 (1%). In order to asses the DE genes, we
 
 design <- model.matrix(~type + samplecodes, data = colData(se.paired.genes))
 v <- voom(dgenorm, design, plot=FALSE)
-dim(se.paired.genes)
-dim(dgenorm)
+
 FDRcutoff <- 0.01
 mod0 <- model.matrix(~samplecodes, colData(se.paired.genes))
 sv <- sva(v$E, mod = design, mod0 = mod0)
@@ -488,7 +487,7 @@ design.voom <- cbind(design, sv$sv)
 fit <- lmFit(v, design.voom)
 fit <- eBayes(fit)
 res <- decideTests(fit, p.value = FDRcutoff)
-summary(res)
+
 
 
 ```
@@ -514,9 +513,7 @@ As we can see in these two previous plots, we obtained many genes that are consi
 We ploted the Fold Change distribution in order to asses if this variable could be used in order to further reduce the number of differentially expressed genes. This could potentially give us a narrower list of genes that may be related to the development of the Kidney clear cell carcinoma.
 
 
-```{r}
-summary(toptable)
-```
+
 
 ```{r logfcdist, echo=FALSE, out.width="600px", fig.cap="Figure S20: Plot of logFC distribution."}
 ggplot(toptable) + geom_histogram(aes(x=logFC), binwidth = 0.01, fill = "#6785d0") + theme_bw()
@@ -600,7 +597,6 @@ fit <- eBayes(fit)
 toptable.gsea <- topTable(fit, coef = 2, n=Inf)
 
 tGSgenes <- toptable.gsea[match(colnames(gsmatrix), rownames(toptable.gsea)), "t"]
-length(tGSgenes)
 head(tGSgenes)
 zS <- sqrt(rowSums(gsmatrix)) * (as.vector(gsmatrix %*% tGSgenes)/rowSums(gsmatrix))
 length(zS)
@@ -618,7 +614,7 @@ abline(0,1)
 
 ```{r}
 rnkGS <- sort(abs(zS), decreasing = TRUE)
-head(rnkGS,20)
+head(rnkGS,27)
 
 ## plot stuff
 plotGS <- function(se, gs, pheno, ...) {
@@ -668,6 +664,8 @@ GOresults <- GOresults[GOresults$Size >= 5 & GOresults$Count >= 5,]
 
 GOresults <- GOresults[order(GOresults$OddsRatio, decreasing = TRUE), ]
 GOresults <- GOresults[order(GOresults$Pvalue, decreasing = FALSE), ]
+
+head(GOresults)
 
 htmlReport(hgOver, file = "gotests.html")
 ```
