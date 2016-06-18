@@ -45,7 +45,7 @@ library(org.Hs.eg.db)
 library(GOstats)
 library(biomaRt)
 library(KEGG.db)
-#library(e1071)
+library(e1071)
 library(GSEABase)
 library(GSVAdata)
 ```
@@ -757,7 +757,7 @@ When performing the functional enrichment analysis, some fo the gene sets have a
 
 ## HIERARCHICAL CLUSTERING USING DE GENES
 
-Then, we performed a Hierarchical clustering on the set of paired samples used for the analysis and all the available samples, but only the 77 D.E. genes in both cases. This should give us a picture of how good these genes are for separating tumor and normal samples.
+Then, we performed a Hierarchical clustering on the set of paired samples used for the analysis and all the available samples, but only the 199 D.E. genes in both cases. This should give us a picture of how good these genes are for separating tumor and normal samples.
 
 ```{r}
 head(colnames(colData(se.paired.genes)))
@@ -771,8 +771,11 @@ se.DE  <- se.paired.genes[DE.genes,]
 dgenorm.DE <- dgenorm[DE.genes,]
 
 # Filter SE object using DE.genes (all samples)
-se.all.DE      <- se[DE.genes,]
-dgenorm.all.DE <- dge[DE.genes,]
+
+se.all.DE <- se[mask,]            # ony high expressed genes
+se.all.DE <- se.all.DE[DE.genes]  # only DE genes
+
+dgenorm.all.DE <- dgenorm[DE.genes,]  # only DE genes
 ```
 
 ```{r sampleClusteringDE, fig.height=7, fig.width=14, dpi=100, echo=TRUE, fig.cap="Figure S23: Hierarchical clustering of the samples used in the analysis using only the DE genes."}
@@ -818,6 +821,37 @@ plot(sampleDendrogram, main="Hierarchical clustering of samples")
 legend("topright", paste("TYPE", sort(unique(batch)), levels(factor(se.all.DE$type))), fill=sort(unique(batch)))
 
 ```
+
+
+## Naive Bayes Classifier
+
+
+```{r}
+se.training <- as.data.frame(t(assay(se.DE)))
+se.training$type <- colData(se.DE)$type
+
+se.testing <- as.data.frame(t(assay(se.all.DE)))
+se.testing$type <- colData(se.all.DE)$type
+
+# Remove training samples from testing set
+se.testing <- se.testing[!rownames(se.testing) %in% rownames(se.training),]
+
+# Build model and predict
+model <- naiveBayes(type ~., data=se.training)
+nb.res <- table(predict(model, se.testing), se.testing[,200])
+
+TP <- nb.res[2,2]
+TN <- nb.res[1,1]
+FP <- nb.res[2,1]
+FN <- nb.res[1,2]
+
+precision <- TP / (TP + FP) 
+recall    <- TP / (TP + FN)
+pred.results <- table(precision, recall)
+pred.results
+```
+
+
 
 
 ##SESSION INFORMATION
