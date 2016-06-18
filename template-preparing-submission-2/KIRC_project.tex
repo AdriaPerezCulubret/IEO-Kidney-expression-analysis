@@ -24,7 +24,8 @@
 \correspondingauthor{Corresponding Author}
 
 \begin{abstract}
-The abstract should be written for people who may not read the entire paper, so it must stand on its own. The impression it makes usually determines whether the reader will go on to read the article, so the abstract must be engaging, clear, and concise. In addition, the abstract may be the only part of the article that is indexed in databases, so it must accurately reflect the content of the article. A well-written abstract is the  most effective way to reach intended readers, leading to more robust search, retrieval, and usage of the article. 
+Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this study, we perform a differential expression coupled with a function enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by the expression data. The results for this study indicates that KIRC tumours suffer a metabolic shift to a downregulation of the oxidative phosphorilation and promotes the fatty-acid synthesis, and it also singles out PD-1 as a key factor for the immune system evasion of the tumour.
+
 
 \end{abstract}
 \setboolean{displaycopyright}{true}
@@ -39,7 +40,7 @@ The abstract should be written for people who may not read the entire paper, so 
 
 \section*{Introduction}
 
-Kidney Renal Clear Cell Carcinoma (KIRC) is the most common type of kidney cancer (95\%)\emph{[cita cancer SEEE]}.  An estimated 62,700 new cases of kidney (renal) cancer are expected to be diagnosed in 2016, with 14.240 expected deaths (2,4\% of all death cancers).   The  5-year  and  10-year  relative  survival  rates  for  kidney  
+Kidney Renal Clear Cell Carcinoma (KIRC) is the most common type of kidney cancer (95\%)\emph{[cita cancer SEEE]}.  An estimated 62,700 new cases of kidney cancer are expected to be diagnosed in 2016, with 14.240 expected deaths (2,4\% of all death cancers).   The  5-year  and  10-year  relative  survival  rates  for  kidney  
 cancer are 74\% and 62\% respectively.  Two-thirds of cases 
  are diagnosed at a local stage, for which the 5-year relative 
 survival  rate  is  92\%, but when the tumour has spread from the kidney to other parts of the body, the rate lowers at 11\%\emph{[citar cancer SEEE?]}. 
@@ -47,7 +48,7 @@ survival  rate  is  92\%, but when the tumour has spread from the kidney to othe
 The renal clear cell carcinoma is a malignant cancer from the renal parenchyma, originated in the tubules. The clear cells carcinoma is one of the four major histologic subtype, and the most common (75\%). Clear cells are a specific cell-type defined by a clear cytoplasm due to a high lipid content. This subtype is the least likely to reproduce, but has a strong resistance to chemotherapy and radiotherapy. The primary treatment is nephrectomy or partial nephrectomy, and sometimes laparoscopic techniques are used. 
 	
 
-Although KIRC is a common cancer, little has been done to its molecular characterization. The reason behind its high resistance to chemotherapy and radiotherapy is still unkown. Some molecular alterations have been identified. The PI3K/AKT pathway seems to be recurrently mutated, and a widespread DNA hypomethylation was associated with a mutation of the \textit{SETD2} methyltransferase. In aggressive cancers, there's evidence of a methabolic shift, with downregulation of the oxidative phosphorylation  and the fatty-acid degradation pathways and upregulation of the pentose phosphate pathway\emph{[comprehensive KIRC cit]}.
+Although KIRC is a common cancer, little has been done to its molecular characterization. The reason behind its high resistance to chemotherapy and radiotherapy is still unkown. Some molecular alterations have been identified. The PI3K/AKT pathway seems to be recurrently mutated, and a widespread DNA hypomethylation was associated with a mutation of the \textit{SETD2} methyltransferase. In aggressive cancers, there's evidence of a methabolic shift, with downregulation of the oxidative phosphorylation  and the fatty-acid degradation pathways and upregulation of the pentose phosphate pathway\emph{[Comprehensive guide to clear cell renal cell carcinoma]}.
 
 A molecular characterization of the KIRC is needed in order to identify the key molecular mechanisms that cause this cancer and target them in novel treatments. In this study,  a differential expression analysis of the RNA-Seq data provided by the TCGA has been performed, with a further functional enrichment analysis of GO terms and a Gene Set Enrichment Analysis to identify the molecular profile of this cancer.
 
@@ -100,7 +101,7 @@ For example: Strains are available upon request. File S1 contains detailed descr
 \subsection*{Differentially Expressed Analysis}
 The DE analysis shows 9,108 differentially expressed genes in KIRC tumour, being 4,014 under-expressed and 5,094 over-expressed. Out of these DE genes, 46 were classified as strongly over-expressed and 153 as strongly under-expressed. The volcano plot represented in Fig. 1 shows the different filters applied to the whole set of genes.
 
-Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-supressor genes as they promote a correct chromatin remodelling and DNA repair [cit 2 articles de renal cancer]. While PI3K/AKT pathway has been targeted as strong therapeutical target (cit 1 kric), we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
+Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-supressor genes as they promote a correct chromatin remodelling and DNA repair [CITAR 2:Comprehensive molecular characterization of clear cell renal cell carcinoma / SETD2 loss-of-function promotes renal cancer branched evolution through replication stress and impaired DNA repair]. While PI3K/AKT pathway has been targeted as strong therapeutical target (CITAA: Comprehensive molecular characterization of clear cell renal cell carcinoma), we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
 
 \begin{figure}[htbp]
 \centering
@@ -114,7 +115,7 @@ The Functional Enrichment analysis using GO terms revealed 96 over-represented t
 
 Another group of representative terms are the ones related with regulation of immune response and T-cell functioning. This suggests that KIRC may cause a huge deregulation of the immune system, and might be a target for its treatment. 
 
-When looking at the under-represented terms, many of them are related with renal function like ion transport and small molecule metabolism. Several terms related with the oxidative phosphorilation pathway are under-represented along with fatty-acid degradation. This metabolical shift to fatty-acid synthesis and inactivation of oxidative phosphorilation was previously indentified in KIRC [citation].
+When looking at the under-represented terms, many of them are related with renal function like ion transport and small molecule metabolism. Several terms related with the oxidative phosphorilation pathway are under-represented along with fatty-acid degradation. This metabolical shift to fatty-acid synthesis and inactivation of oxidative phosphorilation was previously indentified in KIRC [CITAAA: Comprehensive molecular characterization of clear cell renal cell carcinoma].
 
 KEGG analysis results show that among the most represented pathways over the over-expressed DE genes, some KEGG pathways terms related to the immune system response, such as primary immunodeficiency and T-cell receptor signaling pathway, can be found.  These results are in line with the suggested hypothesis of an immune system deregulation in KIRC. Furthermore, the p53 signaling pathway is also found as one of the most over-represented pathways.
 
