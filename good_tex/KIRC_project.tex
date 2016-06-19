@@ -66,7 +66,6 @@ The Kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been e
 \begin{tableminipage}{\textwidth}
 \begin{tabularx}{\textwidth}{ssssssb}
 \hline
-\footnote{This is an example of a footnote in a table. Lowercase, superscript italic letters (a, b, c, etc.) are used by default. You can also use *, **, and *** to indicate conventional levels of statistical significance, explained below the table.}
 GOBPID & Pvalue & OddsRatio & ExpCount & Count & Size & Term\\
 \hline
 GO:0051301 & 0.000 & 1.534 & 165 & 206 & 402 & cell division\\
@@ -87,7 +86,7 @@ All the analyses have been performed with R. You could find more information abo
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
 
-To filter out the genes with a low or without expression, we analysed the distribution of expression levels among genes using the log Counts Per Millions measure (logCPM). (GRAFICA? S7). We determined a cut-off of 1 logCPM. With this filter we reduce the number of genes from 20,115 to 12,495 genes.
+To filter out the genes with a low or without expression, we analysed the distribution of expression levels among genes using the log Counts Per Millions measure (logCPM). (Fig. S7). We determined a cut-off of 1 logCPM. With this filter we reduce the number of genes from 20,115 to 12,495 genes.
 
 The Trimmed Mean of M-values method (TMM) \citep{Robinson2010}, implemented in the EdgeR package, was used to normalize the expression values.
 
