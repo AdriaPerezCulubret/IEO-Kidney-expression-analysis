@@ -90,11 +90,11 @@ To filter out the genes with a low or without expression, we analysed the distri
 
 The Trimmed Mean of M-values method (TMM) \citep{Robinson2010}, implemented in the EdgeR package, was used to normalize the expression values.
 
-Analysing MA-plots \citep{Dudoit2002}, a normal sample (TGCA-CW-5591) was found to have an abnormal major gene expression bias in the association between the fold-changes and average expression, resulting in a large dependence between both variables of the MA plot. For this reason, this sample and its paired in the tumour set were removed from the analysis.
+Analysing MA-plots \citep{Dudoit2002}, a normal sample (TGCA-CW-5591) was found to have an abnormal major gene expression bias in the association between the fold-changes and average expression, resulting in a large dependence between both variables of the MA plot (Fig. S8-9). For this reason, this sample and its paired in the tumour set were removed from the analysis.
 
 
 \subsubsection*{Batch Effect Analyses}
-: Four possible sources of variation were considered for the batch effect identification \citep{Leek2010}: Gender, Tissue Source Site (TSS), Plate, and portion analyte. For each one of these batch indicators, we performed a hierarchical clustering using the Spearman correlation coefficient citep{Spearman1904}  and a multidimensional scaling plot, in order to assess their possible effect. We conclude that none of them confound the primary source of variation, which in this case is the cell-type (tumour/normal).
+: Four possible sources of variation were considered for the batch effect identification \citep{Leek2010}: Gender, Tissue Source Site (TSS), Plate, and portion analyte (Fig. S10-17). For each one of these batch indicators, we performed a hierarchical clustering using the Spearman correlation coefficient citep{Spearman1904}  and a multidimensional scaling plot, in order to assess their possible effect. We conclude that none of them confound the primary source of variation, which in this case is the cell-type (tumour/normal).
 
 \subsubsection*{Differential expression analysis	}
 : To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient \citep{Smyth2004}.
