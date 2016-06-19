@@ -58,7 +58,8 @@ A molecular characterization of the KIRC is needed in order to identify the key 
 The Kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from TCGA. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each sample has a total of 20115 genes. 
 
 \subsection*{Statistics and data analysis}
-All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004} has been used for the differentially expressed gene identification analysis.
+All the analyses have been performed with R. You could find more information about that in: package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004} has been used for the differentially expressed gene identification analysis.
+
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
@@ -180,6 +181,7 @@ GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear c
 %  \label{tab:shape-functions}
 \end{tableminipage}
 \end{table*}
+
 
 \bibliography{example-bibliography}
 
