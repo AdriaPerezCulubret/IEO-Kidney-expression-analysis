@@ -58,7 +58,7 @@ A molecular characterization of the KIRC is needed in order to identify the key 
 The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas (\href{http://www.cancergenome.nih.gov}{TCGA}). The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each one of the samples have a total of 20115 genes. 
 
 \subsection*{Statistics and data analysis}
-All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004} has been used for the differentially expressed gene identification analysis.  CITAAAAAA!
+All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} {Gentleman2004} has been used for the differentially expressed gene identification analysis.  CITAAAAAA!
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
@@ -102,7 +102,7 @@ For example: Strains are available upon request. File S1 contains detailed descr
 \subsection*{Differentially Expressed Analysis}
 The DE analysis shows 9,108 differentially expressed genes in KIRC tumour, being 4,014 under-expressed and 5,094 over-expressed. Out of these DE genes, 46 were classified as strongly over-expressed and 153 as strongly under-expressed. The volcano plot represented in Fig. 1 shows the different filters applied to the whole set of genes.
 
-Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-supressor genes as they promote a correct chromatin remodelling and DNA repair [CITAR 2:Comprehensive molecular characterization of clear cell renal cell carcinoma / SETD2 loss-of-function promotes renal cancer branched evolution through replication stress and impaired DNA repair]. While PI3K/AKT pathway has been targeted as strong therapeutical target (CITAA: Comprehensive molecular characterization of clear cell renal cell carcinoma), we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
+Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-supressor genes as they promote a correct chromatin remodelling and DNA repair [CITAR 2:Comprehensive molecular characterization of clear cell renal cell carcinoma/SETD2 loss-of-function promotes renal cancer branched evolution through replication stress and impaired DNA repair]. While PI3K/AKT pathway has been targeted as strong therapeutical target (CITAA: Comprehensive molecular characterization of clear cell renal cell carcinoma), we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
 
 \begin{figure}[htbp]
 \centering
@@ -131,7 +131,7 @@ The analysis highlights again the loss of kidney function and the metabolic shif
 As previously mentioned in the Functional Enrichment results, many immune system sets are found to be differentially expressed. Primary immunodeficiency, T-cell apopotosis and PD1 signalling pathways, show us clues of how KIRC evades the immune function of the organism. The BioCarta T-cell apoptosis pathway is characteristic of the HIV infection and describes how the virus induces T-cell apoptosis. The fact that KIRC presents this feature indicates that this may be an useful mechanism for this tumour to not be recognized as a malignant cell.
 
 Programmed Cell Death Protein 1 (PD1/CD279) is a cell surface receptor that belongs to the immunoglobulin super-family and is expressed in T-cells. It functions as an immune checkpoint, negatively regulating the immune response (CITA Loise M Francisco...). PD1 plays an important role in down-regulating the immune system reducing autoimmunity and promoting self-tolerance through the induction of antigen-specific T-cell apoptosis.
-PD1 has been involved in the tumour cells escape from the host immune system (CITA Yoshiko iwai). This argument is in line with the over-expression of PD1 found in our GSEA results. This protein has been proposed as target for several drugs that are currently in different trial stages, such as Nivolumab, used as a possible second line treatment for renal cell carcinoma \cite{nivolumab}.
+PD1 has been involved in the tumour cells escape from the host immune system (CITA Yoshiko iwai). This argument is in line with the over-expression of PD1 found in our GSEA results. This protein has been proposed as target for several drugs that are currently in different trial stages, such as Nivolumab, used as a possible second line treatment for renal cell carcinoma {nivolumab}.
 
 
 \subsection*{Naive Bayes classifier}
@@ -163,7 +163,7 @@ With the Naive Bayes Classifier, over the prediction of the cell type of the unp
 
 \section*{In-text Citations}
 
-Add citations using the \verb|\citep{}| command, for example \citep{neher2013genealogies} or for multiple citations, \citep{neher2013genealogies, rodelsperger2014characterization}
+Add citations using the \verb|\citep{}| command, for example {neher2013genealogies} or for multiple citations, {neher2013genealogies, rodelsperger2014characterization}
 
 \section*{Examples of Article Components}
 
@@ -192,8 +192,7 @@ GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear c
 
 Leek, J. T. and J. D. Storey, 2007 Capturing heterogeneity in gene expression studies by surrogate variable analysis. PLoS Genetics 3: 1724–1735.
 
-\subsection*{Referennnnn}
 \bibliographystyle{ieetr}
-\bibliography{bibliography}
+\bibliography{goodbibliography}
 
 \end{document}
