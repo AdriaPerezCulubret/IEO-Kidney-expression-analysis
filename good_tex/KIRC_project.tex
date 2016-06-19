@@ -25,7 +25,7 @@
 
 \begin{abstract}
 
-Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this  study, we perform a differential expression analysis coupled with a functional enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize  the molecular functioning of this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by their expression data. The results obtained indicate that renal clear cell carcinomas suffer a metabolic shift towards a strong fatty-acid synthesis by downregulating their degradation and the oxidative phosphorilation. Results also single out PD-1 as a key factor for the immune system evasion of the tumour.
+Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this  study, we perform a differential expression analysis coupled with a function enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize  the molecular functioning of this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by their expression data. The results obtained indicate that renal clear cell carcinomas suffer a metabolic shift towards a strong fatty-acid synthesis by downregulating their degradation and the oxidative phosphorilation. Results also single out PD-1 as a key factor for the immune system evasion of the tumour.
 
 
 \end{abstract}
@@ -59,7 +59,6 @@ The Kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been e
 
 \subsection*{Statistics and data analysis}
 All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. We have used the \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004}  for the differentially expressed gene identification analysis.
-
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
@@ -113,7 +112,7 @@ Analysing individual genes previously found to be mutated in the KIRC developmen
 \end{figure}
 
 \subsection*{Functional Enrichment}
-The Functional Enrichment analysis using GO terms revealed 96 over-represented terms and 59 under-represented [see Supplementary material]. The most representative terms in the over-represented group include cell-division and proliferation, intrinsic properties in any malignant cell (Table 1). 
+The Functional Enrichment analysis using GO terms revealed 96 over-represented terms and 59 under-represented [Full results here and here]. The most representative terms in the over-represented group include cell-division and proliferation, intrinsic properties in any malignant cell. 
 
 Another group of representative terms are the ones related with regulation of immune response and T-cell functioning. This suggests that KIRC may cause a huge deregulation of the local immune response to the tumour. 
 
@@ -135,7 +134,11 @@ PD-1 has been involved in the tumour cell evasion of the host immune system \cit
 
 
 \subsection*{Naive Bayes classifier}
-With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 2A). These results show that these 199 strongly DE genes could be used for building a classification method based on machine learning \citep{Yang2014}. 
+With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 2A). 
+
+The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
+
+With the Naive Bayes Classifier, over the prediction of the cell type of the unpaired samples, we computed the specificity and sensitivity and we obtain a value of 0.971 and 0.921 respectively. The F-measure computed with these values results in a value of 0.0609. In the \citep{Yang2014} article, a similar classifier was built, but using a Support Vector Machine instead of a Naive Bayer Classifier. Although K-Fold Cross Validation was not done in our study, which could explain the differences in the evaluation of the effectiveness of this classifier, the specificity and sensitivity results are very similar.
 
 \section*{Conclusions}
 
@@ -156,9 +159,7 @@ This demonstrates how our analysis was able to identify a target protein that ha
 \label{fig:spectrum}
 \end{figure*}
 
-The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
 
-With the Naive Bayes Classifier, over the prediction of the cell type of the unpaired samples, we computed the specificity and sensitivity and we obtain a value of 0.971 and 0.921 respectively. The F-measure computed with these values results in a value of 0.0609. In the \citep{Yang2014} article, a similar classifier was built, but using a Support Vector Machine instead of a Naive Bayer Classifier. Although K-Fold Cross Validation was not done in our study, which could explain the differences in the evaluation of the effectiveness of this classifier, the specificity and sensitivity results are very similar.
 
 \newcolumntype{b}{X}
 \newcolumntype{s}{>{\hsize=.5\hsize}X}
@@ -181,7 +182,6 @@ GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear c
 %  \label{tab:shape-functions}
 \end{tableminipage}
 \end{table*}
-
 
 \bibliography{example-bibliography}
 
