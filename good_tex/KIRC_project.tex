@@ -162,7 +162,7 @@ On the other hand, oxidative phosphorylation and fatty acid degradation are foun
 
 
 \subsection*{Gene Set Enrichment Analysis}
-The GSEA results show 677 DE pathways. In this study we only focused on the top ones. This results can be found on supplementary materials (Fig. \url{file:./paired_project.html\#gene-set-enrichment-analysis}{S22}).
+The GSEA results show 677 DE pathways. In this study we only focused on the top ones. This results can be found on supplementary materials.
 
 The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. \ref{fig:pathways}). We found several pathways of small molecules, cation and glucose transport across the membrane that are under-expressed in KIRC, suggesting that the renal function is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and  an inactivation of the TCA cylce in favour of the pentose phosphate pathway, as suggested in \citep{Creighton2013}. 
 
@@ -176,8 +176,7 @@ PD-1 has been involved in the tumour cell evasion of the host immune system \cit
 \subsection*{Naive Bayes classifier}
 With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. \ref{fig:hierarchical}). 
 
-The application of this approach to the whole set of samples results in a more complex set of clusters. Although almost the entire set of normal and tumour samples cluster together, some tumour samples show an unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples. (FIG. S24)
-
+The application of this approach to the whole set of samples results in a more complex set of clusters. Although almost the entire set of normal and tumour samples cluster together, some tumour samples show an unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
 
 With the Naive Bayes Classifier, over the prediction of the cell type of the unpaired samples, we computed the specificity and sensitivity and we obtain a value of 0.971 and 0.921 respectively. The F-measure computed with these values results in a value of 0.0609. In  \citealt{Yang2014} , a similar classifier was built, but using a Support Vector Machine instead of a Naive Bayer Classifier. Although K-Fold Cross Validation was not done in our study, which could explain the differences in the evaluation of the effectiveness of this classifier, the specificity and sensitivity results are very similar.
 
