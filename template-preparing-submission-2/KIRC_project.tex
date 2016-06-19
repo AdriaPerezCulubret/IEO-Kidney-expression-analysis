@@ -24,6 +24,7 @@
 \correspondingauthor{Corresponding Author}
 
 \begin{abstract}
+
 Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this  study, we perform a differential expression analysis coupled with a function enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize  the molecular functioning of this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by their expression data. The results obtained indicate that renal clear cell carcinomas suffer a metabolic shift towards a strong fatty-acid synthesis by downregulating their degradation and the oxidative phosphorilation. Results also single out PD-1 as a key factor for the immune system evasion of the tumour.
 
 
@@ -54,10 +55,10 @@ A molecular characterization of the KIRC is needed in order to identify the key 
 
 \section*{Materials and Methods}
 \subsection*{Data characterization}
-The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas \href{http://www.cancergenome.nih.gov}{TCGA}. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each one of the samples have a total of 20115 genes. 
+The kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from The Cancer Genome Atlas (\href{http://www.cancergenome.nih.gov}{TCGA}). The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each one of the samples have a total of 20115 genes. 
 
 \subsection*{Statistics and data analysis}
-All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. CITAAAAAA!!! EdgeR package from Bioconductor has been used for the differentially expressed gene identification analysis.  CITAAAAAA!
+All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004} has been used for the differentially expressed gene identification analysis.  CITAAAAAA!
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
