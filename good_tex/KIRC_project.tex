@@ -77,6 +77,7 @@ GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear c
 \end{tabularx}
 %  \label{tab:shape-functions}
 \end{tableminipage}
+\label{table:1}
 \end{table*}
 
 \subsection*{Statistics and data analysis}
@@ -96,11 +97,11 @@ Analysing MA-plots \citep{Dudoit2002}, a normal sample (TGCA-CW-5591) was found 
 : Four possible sources of variation were considered for the batch effect identification \citep{Leek2010}: Gender, Tissue Source Site (TSS), Plate, and portion analyte. For each one of these batch indicators, we performed a hierarchical clustering using the Spearman correlation coefficient citep{Spearman1904}  and a multidimensional scaling plot, in order to assess their possible effect. We conclude that none of them confound the primary source of variation, which in this case is the cell-type (tumour/normal).
 
 \subsubsection*{Differential expression analysis	}
-: To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient.
+: To perform the differentially expressed gene identification analysis, we generate a two factors linear model, taking into account the cell-type variable (normal/tumour type) and the patient \citep{Smyth2004}.
 
 We modelled the mean variance trend of logCPM values, computing the weights of this relationship at the individual observation level. In order to perform this part, we applied the voom function, implemented in the \href{https://bioconductor.org/packages/release/bioc/html/limma.html}{limma R-package}, which is part of the BioConductor project. A Surrogate Variable Analysis (SVA) was performed to identify the possibles sources of variation that are not related with our variables of interest (cell-type)  \citep{Leek2007}.
 
-After fitting the data to the linear model, we applied the 	empirical Bayes approach (eBayes) that should result in a far more stable inference (Smyth2004). A False Discovery Rate (FDR)) \citep{Benjamini1995} cut-off of 0.01 was applied to classify the genes as over-expressed, under-expressed or without changed in expression. In order to reduce the number of differentially expressed genes, we classified the genes in two further groups: strongly over-expressed, using a log Fold-changes cut-off of 5 (logFC > 5), and strongly under-expressed (logFC < -5). 
+After fitting the data to the linear model, we applied the 	empirical Bayes approach (eBayes) that should result in a far more stable inference \citep{Smyth2004}. A False Discovery Rate (FDR)) \citep{Benjamini1995} cut-off of 0.01 was applied to classify the genes as over-expressed, under-expressed or without changed in expression. In order to reduce the number of differentially expressed genes, we classified the genes in two further groups: strongly over-expressed, using a log Fold-changes cut-off of 5 (logFC > 5), and strongly under-expressed (logFC < -5). 
 
 \subsubsection*{Functional Enrichment}
 : A Gene Ontology analysis (\href{http://geneontology.org}{GO}) and Kyoto Encyclopedia of Genes and Genomes (\href{http://www.genome.jp/kegg/}{KEGG}) analyses were performed with the differentially expressed genes set. Fisher's exact test \citep{Fisher1922} was applied to obtain the most representative biological process gene ontology terms or KEGG pathways (P< 0.01). The significance of the GO terms is computed conditionally to the significance of its child terms \citep{Alexa2006}. The enrichment tests were performed in three different gene sets: the whole list of differentially expressed genes, the over-expressed gene set and the under-expressed gene set. The GO and KEGG results are available in the supporting materials together with the raw p-values.
@@ -112,13 +113,13 @@ After fitting the data to the linear model, we applied the 	empirical Bayes appr
 \centering
 \includegraphics[width=\linewidth]{figures/fig1_volcano.png}
 \caption{Volcano plot of the differential expression analysis of Kidney Renal Clear Cell Carcinoma. The horizontal dashed line represents the FDR cut-off of 0.01 used for calling DE genes. After calling 9,108 genes as DE, we reduced the number of genes using a Fold Change cutoff of 5 and -5 (vertical lines), resulting in two groups of strongly over-expressed and strongly under-expressed genes (in yellow). }%
-\label{fig:spectrum}
+\label{fig:volcanoplot}
 \end{figure}
 
 \subsubsection*{Hierarchical Clustering and Naive Bayes classifier}
 : We used the strongly over-expressed genes and under-expressed genes, a total of 199 genes, to determine if these genes alone are able to separate our samples in two clusters using a Hierarchical Clustering approach \citep{Spearman1904}). This approach has been applied over the 38 paired samples and also over the whole set of samples (614 samples).
 
-Applying the R package \href{https://cran.r-project.org/web/packages/e1071/index.html}{e1071}, a Naive Bayes Classifier \citep{Smyth2004} was generated, using the paired samples as the training set, considering only the 199 strongly DE genes as features. This classifier was used to predict the cell type of the remaining 540 samples. 
+Applying the R package \href{https://cran.r-project.org/web/packages/e1071/index.html}{e1071}, a Naive Bayes Classifier was generated, using the paired samples as the training set, considering only the 199 strongly DE genes as features. This classifier was used to predict the cell type of the remaining 540 samples. 
 
 \subsection*{Data Availability}
 
@@ -127,7 +128,7 @@ The full workflow of our analysis is given in a supplementary HTML file. The fil
 
 \section*{Results and Discussion}
 \subsection*{Differentially Expressed Analysis}
-The DE analysis shows 9,108 differentially expressed genes in KIRC tumour, being 4,014 under-expressed and 5,094 over-expressed. Out of these DE genes, 46 were classified as strongly over-expressed and 153 as strongly under-expressed. The volcano plot represented in Fig. 1 shows the different filters applied to the whole set of genes.
+The DE analysis shows 9,108 differentially expressed genes in KIRC tumour, being 4,014 under-expressed and 5,094 over-expressed. Out of these DE genes, 46 were classified as strongly over-expressed and 153 as strongly under-expressed. The volcano plot represented in (Fig. \ref{fig:volcanoplot}) shows the different filters applied to the whole set of genes.
 
 Analysing individual genes previously found to be mutated in the KIRC development, the chromatin regulators SETD2 and PBRM1 are over-expressed, even though they are tumour-suppressor genes as they promote a correct chromatin remodelling and DNA repair \citep{Creighton2013, Kanu2015}. While PI3K/AKT pathway has been targeted as strong therapeutical target \citep{Creighton2013}, we did not find any over-expressed gene of this pathway (PTEN/PI3K/PDK1/AKT/MTOR).
 
@@ -142,7 +143,7 @@ When looking at the under-represented terms, many of them are related with renal
 \centering
 \includegraphics[width=\linewidth]{figures/fig3.png}
 \caption{Highlighted gene sets/pathways differentially expressed in KIRC. After performing a Simple GSEA, many gene sets from KEGG, REACTOME and BIOCARTA were found to be differentially expressed. In this plot we have represented four of them, comparing the normalized logCPM for normal and tumor samples. From left to right and top to bottom, the pathways are: cell cycle pathway, fatty acid metabolism, primary immunodeficiency and PD-1 signaling.}%
-\label{fig:spectrum}
+\label{fig:pathways}
 \end{figure}
 
 
@@ -155,14 +156,14 @@ On the other hand, oxidative phosphorylation and fatty acid degradation are foun
 \centering
 \includegraphics[width=\textwidth]{figures/fig2.png}
 \caption{Hierarchical clustering of paired samples using the 199 differentially expressed genes in KIRC. After calling the DE genes using an FDR of 1\%, all the samples used for this expression study were clustered by means of the Spearman's correlation coefficient, but reducing the feature vector to only the logCPM of the differentially expressed genes. }%
-\label{fig:spectrum}
+\label{fig:hierarchical}
 \end{figure*}
 
 
 \subsection*{Gene Set Enrichment Analysis}
 The GSEA results show 677 DE pathways. In this study we only focused on the top ones. This results can be found on supplementary materials (Fig. S22).
 
-The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. 2). We found several pathways of small molecules, cation and glucose transport across the membrane that are under-expressed in KIRC, suggesting that the renal function is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and  an inactivation of the TCA cylce in favour of the pentose phosphate pathway, as suggested in \citep{Creighton2013}. 
+The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. \ref{fig:pathways}). We found several pathways of small molecules, cation and glucose transport across the membrane that are under-expressed in KIRC, suggesting that the renal function is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and  an inactivation of the TCA cylce in favour of the pentose phosphate pathway, as suggested in \citep{Creighton2013}. 
 
 As previously mentioned in the Functional Enrichment results, many immune system sets are found to be differentially expressed. Primary immunodeficiency, T-cell apopotosis and PD1 signalling pathways, show us clues of how KIRC evades the immune function of the organism. The BioCarta T-cell apoptosis pathway is characteristic of the HIV infection and describes how the virus induces T-cell apoptosis. The fact that KIRC presents this feature indicates that this may be an useful mechanism for this tumour to not be recognized as a malignant cell.
 
@@ -172,9 +173,9 @@ PD-1 has been involved in the tumour cell evasion of the host immune system \cit
 
 
 \subsection*{Naive Bayes classifier}
-With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. 3). 
+With a Hierarchical Clustering approach, we can observe if the strongly DE genes separate the samples in different clusters. We applied this method to the paired samples and we can observe a clear separation between normal and tumour samples in two clusters (Fig. \ref{fig:hierarchical}). 
 
-The application of this approach to the whole set of samples results in a more complex set of clusters. As we can see in Fig. 2B, although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
+The application of this approach to the whole set of samples results in a more complex set of clusters. Although almost the entire set of normal and tumour samples, cluster together, some tumour samples show a unexpected clustering behaviour. These samples are closer to the cluster of normal samples, leading us to determine that these strongly DE genes do not capture the whole variability between tumour and normal samples.
 
 With the Naive Bayes Classifier, over the prediction of the cell type of the unpaired samples, we computed the specificity and sensitivity and we obtain a value of 0.971 and 0.921 respectively. The F-measure computed with these values results in a value of 0.0609. In the \citep{Yang2014} article, a similar classifier was built, but using a Support Vector Machine instead of a Naive Bayer Classifier. Although K-Fold Cross Validation was not done in our study, which could explain the differences in the evaluation of the effectiveness of this classifier, the specificity and sensitivity results are very similar.
 
