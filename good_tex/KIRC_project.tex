@@ -58,7 +58,7 @@ A molecular characterization of the KIRC is needed in order to identify the key 
 The Kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been extracted from TCGA. The initial data available from TCGA dataset comprised 542 tumours and 72 normal samples. The tumour group include 187 females and 337 males, while the normal one is formed by 20 female and 52 males. Analysing this data samples, 38 paired samples were found. Each sample has a total of 20115 genes. 
 
 \subsection*{Statistics and data analysis}
-All the analyses have been performed with R. You could find more information about that in: EdgeR package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004} has been used for the differentially expressed gene identification analysis.
+All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. We have used the \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004}  for the differentially expressed gene identification analysis.
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
@@ -125,14 +125,7 @@ On the other hand, oxidative phosphorylation and fatty acid degradation are foun
 \subsection*{Gene Set Enrichment Analysis}
 The GSEA results show 677 DE pathways. In this study we only focused on the top ones. This results can be found on supplementary materials (Fig. S22).
 
-The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. 3). We found several pathways of small molecules, cation and glucose transport across the membrane that are under-expressed in KIRC, suggesting that the renal function is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and  an inactivation of the TCA cylce in favour of the pentose phosphate pathway, as suggested in \citep{Creighton2013}. 
-
-\begin{figure*}[htbp]
-\centering
-\includegraphics[width=\textwidth]{figures/fig3.png}
-\caption{. }%
-\label{fig:spectrum}
-\end{figure*}
+The analysis highlights again the loss of kidney function and the metabolic shift to the fatty acid synthesis  (Fig. 3A). We found several pathways of small molecules, cation and glucose transport across the membrane that are under-expressed in KIRC, suggesting that the renal function is disrupted. As seen before in the Functional Enrichment analysis results, we found the oxidative phosphorilation and the fatty acid degradation pathways under-expressed, indicating an increase of fatty acid synthesis and  an inactivation of the TCA cylce in favour of the pentose phosphate pathway, as suggested in \citep{Creighton2013}. 
 
 As previously mentioned in the Functional Enrichment results, many immune system sets are found to be differentially expressed. Primary immunodeficiency, T-cell apopotosis and PD1 signalling pathways, show us clues of how KIRC evades the immune function of the organism. The BioCarta T-cell apoptosis pathway is characteristic of the HIV infection and describes how the virus induces T-cell apoptosis. The fact that KIRC presents this feature indicates that this may be an useful mechanism for this tumour to not be recognized as a malignant cell.
 
