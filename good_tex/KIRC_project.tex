@@ -25,7 +25,7 @@
 
 \begin{abstract}
 
-Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this  study, we perform a differential expression analysis coupled with a function enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize  the molecular functioning of this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by their expression data. The results obtained indicate that renal clear cell carcinomas suffer a metabolic shift towards a strong fatty-acid synthesis by downregulating their degradation and the oxidative phosphorilation. Results also single out PD-1 as a key factor for the immune system evasion of the tumour.
+Renal Clear Cell Carcinoma is the most common type of Kidney cancer, but very few things are known about his molecular insights. In this  study, we perform a differential expression analysis coupled with a functional enrichment analysis and a gene set enrichment analysis in order to identify the genes and paths that characterize  the molecular functioning of this type of cancer. We also build a Naive Bayes classifier to decide whether a sample is from a tumour or a normal tissue by their expression data. The results obtained indicate that renal clear cell carcinomas suffer a metabolic shift towards a strong fatty-acid synthesis by downregulating their degradation and the oxidative phosphorilation. Results also single out PD-1 as a key factor for the immune system evasion of the tumour.
 
 
 \end{abstract}
@@ -59,6 +59,7 @@ The Kidney Renal Clear-Cell Carcinoma RNA-seq data used in this study has been e
 
 \subsection*{Statistics and data analysis}
 All the analyses have been performed with R. You could find more information about that in: \url{www.r-project.org}. We have used the \href{https://bioconductor.org/packages/release/bioc/html/edgeR.html}{EdgeR} \citep{Robinson2010} package from \href{https://bioconductor.org}{Bioconductor} \citep{Gentleman2004}  for the differentially expressed gene identification analysis.
+
 
 \subsubsection*{Quality and normalization }
 : The library size of the samples has been analysed and major differences in sequencing depth were found. We filtered out the samples with a low sequencing depth (< 45 Millions per read). We obtained a filtered dataset of 298 tumour and 48 normal samples. To obtain a more accurate information and to reduce the size of our set, we determined to use a paired design, taking into account the patient variability. For this reason, we only considered the 38 paired samples for the further analyses.
@@ -180,6 +181,7 @@ GO:0032946 & 0.000 & 2.634 & 27 & 42 & 65 & positive regulation of mononuclear c
 %  \label{tab:shape-functions}
 \end{tableminipage}
 \end{table*}
+
 
 \bibliography{example-bibliography}
 
